@@ -1,5 +1,5 @@
 import torch.nn as nn
-
+import torch.nn.functional as F
 """
 Model architecture for the CIFAR-100 dataset.
 The model is based on the LeNet-5 architecture with some modifications.
@@ -29,11 +29,11 @@ class LeNet5(nn.Module):
             nn.ReLU(),
             nn.Linear(192, 100)  # 100 classes for CIFAR-100
         )
-        self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
         x = self.conv_layer(x)
         x = x.view(x.size(0), -1)  # Flatten the tensor for the fully connected layer
         x = self.fc_layer(x)
-        x = self.softmax(x)
+        #removed softmax because already done by cross entropy loss
+        x = F.log_softmax(x, dim=1)
         return x
