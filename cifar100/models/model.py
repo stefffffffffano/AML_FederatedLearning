@@ -15,15 +15,15 @@ class LeNet5(nn.Module):
     def __init__(self):
         super(LeNet5, self).__init__()
         self.conv_layer = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=5, padding=2),
+            nn.Conv2d(3, 64, kernel_size=5),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(64, 64, kernel_size=5, padding=2),
+            nn.MaxPool2d(2),
+            nn.Conv2d(64, 64, kernel_size=5),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2)
+            nn.MaxPool2d(2)
         )
         self.fc_layer = nn.Sequential(
-            nn.Linear(64 * 8 * 8, 384),  
+            nn.Linear(64 * 5 * 5, 384),  
             nn.ReLU(),
             nn.Linear(384, 192),
             nn.ReLU(),
