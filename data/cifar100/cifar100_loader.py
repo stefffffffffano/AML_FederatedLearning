@@ -9,19 +9,25 @@ def load_cifar100(batch_size=32, validation_split=0.1, download=True):
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
 
-    # Load the full training set
+    # Carica l'intero set di training
     full_trainset = datasets.CIFAR100(root='./data', train=True, download=download, transform=transform)
 
-    indexes = range(0, len(full_trainset))
-    splitting = train_test_split(indexes, train_size = 1-validation_split, random_state = 42, stratify = full_trainset.data["label"], shuffle = True)
-    train_indexes = splitting[0]
-    val_indexes = splitting[1]
+    # Creare indici per il dataset e dividere in training e validation
+    indexes = list(range(len(full_trainset)))  
+    train_indexes, val_indexes = train_test_split(indexes, train_size=1-validation_split, test_size=validation_split, random_state=42, stratify=full_trainset.targets, shuffle=True)
 
+    # Creare subset per training e validation
     train_dataset = Subset(full_trainset, train_indexes)
     val_dataset = Subset(full_trainset, val_indexes)
 
-    # Load the test dataset
-    testset = datasets.CIFAR100(root='./data', train=False, download=download, transform=transform)
-    testloader = DataLoader(testset, batch_size=batch_size, shuffle=False)
+    # Creare DataLoader per i subset di training e validation
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
-    return train_dataset, val_dataset, testloader
+    # Caricare il dataset di test
+    testset = datasets.CIFAR100(root='./data', train=False, download=download, transform=transform)
+    test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False)
+
+    return train_loader, val_loader, test_loader
+
+
