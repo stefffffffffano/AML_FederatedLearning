@@ -23,7 +23,7 @@ class LeNet5(nn.Module):
             nn.MaxPool2d(2)
         )
         self.fc_layer = nn.Sequential(
-            nn.Linear(64 * 5 * 5, 384),  
+            nn.Linear(64 * 3 * 3, 384),  # Updated to be consistent with data augmentation
             nn.ReLU(),
             nn.Linear(384, 192),
             nn.ReLU(),
@@ -32,8 +32,7 @@ class LeNet5(nn.Module):
 
     def forward(self, x):
         x = self.conv_layer(x)
-        x = x.view(x.size(0), -1)  # Flatten the tensor for the fully connected layer
+        x = x.view(x.size(0), -1)  # Flatten the output of the conv layers
         x = self.fc_layer(x)
-        #removed softmax because already done by cross entropy loss
         x = F.log_softmax(x, dim=1)
         return x
