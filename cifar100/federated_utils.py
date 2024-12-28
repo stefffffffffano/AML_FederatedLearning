@@ -1,30 +1,61 @@
 from torch.utils.data import Subset
 from copy import deepcopy
 import torch
+import numpy as np
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-#TODO: ensure Identically distributed over classes!
-def shard_dataset_iid(dataset, num_clients):
+def sharding(dataset, number_of_clients, number_of_classes=100):
     """
-    Splits the input dataset into `num_clients` equal-sized shards.
-    Each shard corresponds to the training data for a single client
-
-    Args:
-        dataset (Dataset): The dataset to be split into shards.
-        num_clients (int): The number of clients to divide the dataset among.
-
-    Returns:
-        list[Subset]: A list of dataset shards, one for each client.
+    Function that performs the sharding of the dataset given as input.
+    dataset: dataset to be split;
+    number_of_clients: the number of partitions we want to obtain;
+    number_of_classes: (int) the number of classes inside each partition, or 100 for IID;
     """
-    # Calculate the number of items each client should receive
-    num_items_per_client = len(dataset) // num_clients
 
-    # Create shards as Subset objects, each containing a range of indices
-    shards = [Subset(dataset, range(i * num_items_per_client, (i + 1) * num_items_per_client))
-              for i in range(num_clients)]
+    # Validation of input parameters
+    if not (1 <= number_of_classes <= 100):
+        raise ValueError("number_of_classes should be an integer between 1 and 100")
+
+    # Shuffle dataset indices for randomness
+    indices = np.random.permutation(len(dataset))
+
+    # Compute basic partition sizes
+    basic_partition_size = len(dataset) // number_of_clients
+    remainder = len(dataset) % number_of_clients
+
+    shards = []
+    start_idx = 0
+
+    if number_of_classes == 100:  # IID Case
+        # Equally distribute indices among clients: we can just randomly assign to each client an equal amount of records
+        for i in range(number_of_clients):
+            end_idx = start_idx + basic_partition_size + (1 if i < remainder else 0)
+            shards.append(Subset(dataset, indices[start_idx:end_idx]))
+            start_idx = end_idx
+    else:  # non-IID Case
+        # Count of each class in the dataset
+        from collections import Counter
+        target_counts = Counter(target for _, target in dataset)
+
+        # Calculate per client class allocation
+        class_per_client = np.random.choice(list(target_counts.keys()), size=number_of_classes, replace=False)
+        class_idx = {class_: np.where([target == class_ for _, target in dataset])[0] for class_ in class_per_client}
+
+        # Assign class indices evenly to clients
+        for i in range(number_of_clients):
+            client_indices = np.array([], dtype=int)
+            for class_ in class_per_client:
+                n_samples = len(class_idx[class_]) // number_of_clients + (1 if i < remainder else 0)
+                client_indices = np.concatenate((client_indices, class_idx[class_][:n_samples]))
+                class_idx[class_] = np.delete(class_idx[class_], np.arange(n_samples))
+
+            shards.append(Subset(dataset, indices=client_indices))
+
     return shards
 
+def client_selection(number_of_clients, clients_fraction, dataset):
+    print()
 
 def client_update(model, client_id, client_data, criterion, optimizer, local_steps=4, detailed_print=False):
     """
