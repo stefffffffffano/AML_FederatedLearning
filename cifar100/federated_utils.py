@@ -54,8 +54,31 @@ def sharding(dataset, number_of_clients, number_of_classes=100):
 
     return shards
 
-def client_selection(number_of_clients, clients_fraction, dataset):
-    print()
+def client_selection(number_of_clients, clients_fraction, uniform=True, gamma=None):
+    """
+    Selects a subset of clients based on uniform or skewed distribution.
+    
+    Args:
+    number_of_clients (int): Total number of clients.
+    clients_fraction (float): Fraction of clients to be selected.
+    uniform (bool): If True, selects clients uniformly. If False, selects clients based on a skewed distribution.
+    gamma (float): Hyperparameter for the Dirichlet distribution controlling the skewness (only used if uniform=False).
+    
+    Returns:
+    list: List of selected client indices.
+    """
+    num_clients_to_select = int(number_of_clients * clients_fraction)
+    
+    if uniform:
+        # Uniformly select clients without replacement
+        selected_clients = np.random.choice(number_of_clients, num_clients_to_select, replace=False)
+    else:
+        # Generate skewed probabilities using a Dirichlet distribution
+        probabilities = np.random.dirichlet(np.ones(number_of_clients) * gamma)
+        selected_clients = np.random.choice(number_of_clients, num_clients_to_select, replace=False, p=probabilities)
+    
+    return selected_clients
+   
 
 def client_update(model, client_id, client_data, criterion, optimizer, local_steps=4, detailed_print=False):
     """
