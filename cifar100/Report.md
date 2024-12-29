@@ -16,7 +16,7 @@ In this first setting, the best configuration we obtained was with the StepLR, L
 ![alt text](images_report/image.png)
 
 
-This is the training loss for all the schedulers with LR = 0.005. LR is probably the most important parameter, that's why we decided to report it:  
+This is the training loss for all the schedulers with LR = 0.005. LR is the most important hyperparameter, that's why we decided to report it:  
 
 ![alt text](images_report/image-1.png)
 
@@ -27,8 +27,15 @@ This is the plot of training accuracy vs validation accuracy, to take into accou
 
 ![alt text](images_report/image-2.png)
 
-The problem related to overfitting is clearly solved, but we observe the opposite one: underfitting. In order to make it better, we have to train for longer. This is not a real problem, we did this test with fewer epochs with respect to the ones we were planning to use for the final model used for tests. Also, by plotting losses, we observe that the exponential LR seems to be the best choice because it's the one that decreases more regularly:  
+The problem related to overfitting is clearly solved, but we observe that the validation accuracy is higher with respect to the training accuracy. This is related to data augemntation: it is applied only on the training set and it makes the task more difficult. Also, by plotting losses, we observe that the exponential LR seems to be the best choice because it's the one that decreases more regularly:  
 ![alt text](images_report/image-3.png)  
 
 
-So, the previously reported one, will be the final configuration used for tests. For the final training, we decided to set, as a first try, a number of epochs equal to 200 and observe how the model behaves.
+So, the previously reported one, will be the final configuration used for tests. For the final training, we decided to set, as a first try, a number of epochs equal to 200 and observe how the model behaves. The following are training and validation accuracy after the model has been trained for 200 epochs, leading to a test accuracy of 40.52% on the test set.
+
+![alt text](images_report/image-4.png)
+
+![alt text](images_report/image-5.png)
+
+The accuracy reached by the model is not so high, which could suggest underfitting. Checking online, I found some other benchmarks regarding the performance of LeNet-5, which reaches an accuracy of 55% [https://github.com/AbXD8901/Comparison-of-CNN-Architectures-on-Different-Datasets/blob/main/Conclusion.pdfon] CIFAR-10, which is a simpler dataset with respect to CIFAR-100. This suggests that, probably, the low accuracy reached by the model is related to the simplicity of the architecture, not able to perform as well as other models (such as EfficientNet) on a complex dataset. The number of epochs (200) seems to be enough, and probably even too high, since not the training nor the validation accuracies are increasing in the last epochs.   
+Another possible reason why the accuracy doesn't grow also in training can be related to the learning rate being too low in an advanced phase of the training because of the scheduler. Indeed, the exponential LR makes the learning rate decrease without restarting. Maybe, by trying with the cosine annealing scheduler with a T_max = num_epochs/3 we are able to reach an higher accuracy.
