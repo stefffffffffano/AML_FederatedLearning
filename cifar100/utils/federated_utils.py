@@ -105,7 +105,7 @@ def client_update(model, client_id, client_data, criterion, optimizer, local_ste
     Returns:
         dict: The state dictionary of the updated model.
     """
-    cudnn.benchmark  # Calling this optimizes runtime
+
     model.train()  # Set the model to training mode
     for epoch in range(local_steps):
         for data, targets in client_data:
@@ -254,7 +254,7 @@ def fedAvg(global_model,training_set, valid_dataset, num_clients,num_classes, ro
         if val_accuracy > best_val_acc:
             best_val_acc = val_accuracy
             best_model_state = deepcopy(global_model.state_dict())
-
+        print("Done one round")
         train_accuracy, train_loss = evaluate(global_model, training_set)
         val_accuracies.append(val_accuracy)
         val_losses.append(val_loss)
