@@ -217,9 +217,9 @@ def fedAvg(global_model,training_set, valid_dataset, num_clients,num_classes, ro
     train_losses = []
     shards = sharding(dataset, num_clients,num_classes) #each shard represent the training data for one client
     client_sizes = [len(shard) for shard in shards]
-
+    best_model_state = None  # The model with the best accuracy
     client_selection_count = [0] * num_clients #Count how many times a client has been selected
-
+    best_val_acc = 0.0
     global_model.to(DEVICE) #as alwayse, we move the global model to the specified device (CPU or GPU)
 
     
@@ -251,12 +251,17 @@ def fedAvg(global_model,training_set, valid_dataset, num_clients,num_classes, ro
 
         # Validation done server side on the validation dataset using the global model
         val_accuracy, val_loss = evaluate(global_model, valid_dataset)
+        if val_accuracy > best_val_acc:
+            best_val_acc = val_accuracy
+            best_model_state = deepcopy(global_model.state_dict())
+
         train_accuracy, train_loss = evaluate(global_model, training_set)
         val_accuracies.append(val_accuracy)
         val_losses.append(val_loss)
         train_accuracies.append(train_accuracy)
         train_losses.append(train_loss)
 
+    global_model.load_state_dict(best_model_state)
 
     return val_accuracies,val_losses,train_accuracies,train_losses,global_model,client_selection_count
 
