@@ -294,3 +294,100 @@ def plot_client_selection(client_selection_count, file_name):
     plt.savefig(file_path, format="png", dpi=300)
     plt.close()
     
+def test(global_model, test_loader):
+    """
+    Evaluate the global model on the test dataset.
+    
+    Args:
+        global_model (nn.Module): The global model to be evaluated.
+        test_loader (DataLoader): DataLoader for the test dataset.
+        
+    Returns:
+        float: The accuracy of the model on the test dataset.
+    """
+    test_accuracy, _ = evaluate(global_model, test_loader)
+    return test_accuracy
+
+def plot_metrics(train_losses, train_accuracies, val_losses, val_accuracies, file_name):
+    """
+    Plot the training and validation metrics for a federated learning simulation.
+    
+    Args:
+        train_losses (list): List of training losses.
+        train_accuracies (list): List of training accuracies.
+        val_losses (list): List of validation losses.
+        val_accuracies (list): List of validation accuracies.
+        file_name (str): Name of the file to save the plot.
+    """
+    # Fixed base directory
+    directory = '../plots_federated/'
+    # Ensure the base directory exists
+    os.makedirs(directory, exist_ok=True)
+    
+    # Complete path for the file
+    file_path = os.path.join(directory, file_name)
+    
+    # Create a list of epochs for the x-axis
+    epochs = list(range(1, len(train_losses) + 1))
+    
+    # Plot the training and validation losses
+    plt.figure(figsize=(10, 6))
+    plt.plot(epochs, train_losses, label='Train Loss', color='blue', marker='o')
+    plt.plot(epochs, val_losses, label='Validation Loss', color='red', marker='x')
+    plt.xlabel('Epoch', fontsize=14)
+    plt.ylabel('Loss', fontsize=14)
+    plt.title('Training and Validation Loss', fontsize=16)
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(file_path.replace('.png', '_loss.png'), format='png', dpi=300)
+    plt.close()
+    
+    # Plot the training and validation accuracies
+    plt.figure(figsize=(10, 6))
+    plt.plot(epochs, train_accuracies, label='Train Accuracy', color='blue', marker='o')
+    plt.plot(epochs, val_accuracies, label='Validation Accuracy', color='red', marker='x')
+    plt.xlabel('Epoch', fontsize=14)
+    plt.ylabel('Accuracy', fontsize=14)
+    plt.title('Training and Validation Accuracy', fontsize=16)
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(file_path.replace('.png', '_accuracy.png'), format='png', dpi=300)
+    plt.close()
+
+def save_model(global_model, file_name):
+    """
+    Save the global model to a file.
+    
+    Args:
+        global_model (nn.Module): The global model to be saved.
+        file_name (str): Name of the file to save the model.
+    """
+    # Fixed base directory
+    directory = '../models_federated/'
+    # Ensure the base directory exists
+    os.makedirs(directory, exist_ok=True)
+    
+    # Complete path for the file
+    file_path = os.path.join(directory, file_name)
+    
+    # Save the model to the specified file
+    torch.save(global_model.state_dict(), file_path)
+
+def load_model(model, file_name):
+    """
+    Load the model weights from a file.
+    
+    Args:
+        model (nn.Module): The model to load the weights into.
+        file_name (str): Name of the file to load the model from.
+    """
+    # Fixed base directory
+    directory = '../models_federated/'
+    # Complete path for the file
+    file_path = os.path.join(directory, file_name)
+    
+    # Load the model weights from the specified file
+    model.load_state_dict(torch.load(file_path))
+    return model
