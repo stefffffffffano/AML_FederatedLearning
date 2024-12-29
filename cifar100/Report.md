@@ -27,7 +27,8 @@ This is the plot of training accuracy vs validation accuracy, to take into accou
 
 ![alt text](images_report/image-2.png)
 
-The problem related to overfitting is clearly solved, but we observe that the validation accuracy is higher with respect to the training accuracy. This is related to data augemntation: it is applied only on the training set and it makes the task more difficult. Also, by plotting losses, we observe that the exponential LR seems to be the best choice because it's the one that decreases more regularly:  
+The problem related to overfitting is clearly solved, but we observe that the validation accuracy is higher with respect to the training accuracy. This is related to data augemntation: it is applied only on the training set and it makes the task more difficult. Also, by plotting losses, we observe that the exponential LR seems to be the one that makes the loss decrease more regularly. This is quite intuitive, also because the Cosine annealing is slower with respect to the exponential LR but could be more efficient. More tests will be carried in the following. These are the losses:   
+ 
 ![alt text](images_report/image-3.png)  
 
 
@@ -38,4 +39,13 @@ So, the previously reported one, will be the final configuration used for tests.
 ![alt text](images_report/image-5.png)
 
 The accuracy reached by the model is not so high, which could suggest underfitting. Checking online, I found some other benchmarks regarding the performance of LeNet-5, which reaches an accuracy of 55% [https://github.com/AbXD8901/Comparison-of-CNN-Architectures-on-Different-Datasets/blob/main/Conclusion.pdfon] CIFAR-10, which is a simpler dataset with respect to CIFAR-100. This suggests that, probably, the low accuracy reached by the model is related to the simplicity of the architecture, not able to perform as well as other models (such as EfficientNet) on a complex dataset. The number of epochs (200) seems to be enough, and probably even too high, since not the training nor the validation accuracies are increasing in the last epochs.   
-Another possible reason why the accuracy doesn't grow also in training can be related to the learning rate being too low in an advanced phase of the training because of the scheduler. Indeed, the exponential LR makes the learning rate decrease without restarting. Maybe, by trying with the cosine annealing scheduler with a T_max = num_epochs/3 we are able to reach an higher accuracy.
+Another possible reason why the accuracy doesn't grow also in training can be related to the learning rate being too low in an advanced phase of the training because of the scheduler. Indeed, the exponential LR makes the learning rate decrease without restarting. Maybe, by trying with the cosine annealing scheduler with a T_max = num_epochs/3 we are able to reach an higher accuracy.  
+
+
+Effectively, the test was successful. By changing the scheduler we were able to reach an accuracy on the test set of 45%. These are the plots that report accuracy and loss for the scheduler described before:  
+
+![alt text](images_report/image-6.png)
+
+![alt text](images_report/image-7.png)
+
+In this case, during the test, we noticed that the accuracy was still increasing when the value of the LR was reset because T_max was reached, so, probably, it would benefit also if we decrease T_max to number of epochs divided by 2. We can also try in this case to slightly increase the number of epochs, always trying to mantain the execution time reasonable. In the following test, the scheduler is changed to the previous described one and the number of epochs is increased to 250.
