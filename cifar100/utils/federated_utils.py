@@ -2,8 +2,16 @@ from torch.utils.data import Subset
 from copy import deepcopy
 import torch
 import numpy as np
+from utils import evaluate
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
+import os
+import matplotlib.pyplot as plt
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+criterion = nn.NLLLoss()  # our loss function for classification tasks on CIFAR-100
 
 def sharding(dataset, number_of_clients, number_of_classes=100):
     """
@@ -54,7 +62,7 @@ def sharding(dataset, number_of_clients, number_of_classes=100):
 
     return shards
 
-def client_selection(number_of_clients, clients_fraction, uniform=True, gamma=None):
+def client_selection(number_of_clients, clients_fraction, gamma=None):
     """
     Selects a subset of clients based on uniform or skewed distribution.
     
@@ -69,7 +77,7 @@ def client_selection(number_of_clients, clients_fraction, uniform=True, gamma=No
     """
     num_clients_to_select = int(number_of_clients * clients_fraction)
     
-    if uniform:
+    if gamma is None:
         # Uniformly select clients without replacement
         selected_clients = np.random.choice(number_of_clients, num_clients_to_select, replace=False)
     else:
@@ -154,3 +162,106 @@ def fedavg_aggregate(global_model, client_states, client_sizes):
 
     # Return the aggregated state dictionary with updated weights
     return new_state
+
+
+def fedAvg(global_model,dataset, valid_dataset, num_clients,num_classes, rounds,lr,wd, C=0.1, local_steps=4,gamma=None):
+    """
+    federated averaging algorithm
+    Args:
+        global_model: the model to be trained
+        dataset: the training dataset
+        valid_dataset: the validation dataset
+        num_clients: the number of clients
+        num_classes: the number of classes for the non-IID case
+        rounds: the number of communication rounds
+        lr: learning rate
+        wd: weight decay
+        C: fraction of clients to be selected in each round
+        local_steps: the number of local epochs for each client
+        gamma: parameter for the skewed distribution
+    Returns:
+        val_accuracies: list of validation accuracies
+        val_losses: list of validation losses
+        train_accuracies: list of training accuracies
+        train_losses: list of training losses (all the previous ones for each round)
+        global_model: the trained model
+        client_selection_count: the number of times each client has been selected
+    """
+    val_accuracies = []
+    val_losses = []
+    train_accuracies = []
+    train_losses = []
+    shards = sharding(dataset, num_clients,num_classes) #each shard represent the training data for one client
+    client_sizes = [len(shard) for shard in shards]
+
+    client_selection_count = [0] * num_clients #Count how many times a client has been selected
+
+    global_model.to(DEVICE) #as alwayse, we move the global model to the specified device (CPU or GPU)
+
+    optimizer = optim.SGD(local_model.parameters(), lr=lr, momentum=0.9, weight_decay=wd)
+    # ********************* HOW IT WORKS ***************************************
+    # The training runs for rounds iterations (GLOBAL_ROUNDS=2000)
+    # Each round simulates one communication step in federated learning, including:
+    # 1) client selection
+    # 2) local training (of each client)
+    # 3) central aggregation
+    for round_num in range(rounds):
+        # 1) client selection: In each round, a fraction C (e.g., 10%) of clients is randomly selected to participate.
+        #     This reduces computation costs and mimics real-world scenarios where not all devices are active.
+        selected_clients = client_selection(num_clients, C, gamma) #if gamma is None, the selection is uniform
+        client_states = []
+        for client_id in selected_clients:
+            client_selection_count[client_id] += 1
+
+        # 2) local training: for each client updates the model using the client's data for local_steps epochs
+        for client_id in selected_clients:
+            local_model = deepcopy(global_model) #it creates a local copy of the global model 
+            client_loader = DataLoader(shards[client_id], batch_size=32, shuffle=True)
+
+            local_state = client_update(local_model, client_id, client_loader, criterion, optimizer, local_steps)
+            client_states.append(local_state)
+
+        # 3) central aggregation: aggregates participating client updates using fedavg_aggregate
+        #    and replaces the current parameters of global_model with the returned ones.
+        global_model.load_state_dict(fedavg_aggregate(global_model, client_states, [client_sizes[i] for i in selected_clients]))
+
+        # Validation done server side on the validation dataset using the global model
+        val_accuracy, val_loss = evaluate(global_model, valid_dataset, criterion)
+        train_accuracy, train_loss = evaluate(global_model, dataset, criterion)
+        val_accuracies.append(val_accuracy)
+        val_losses.append(val_loss)
+        train_accuracies.append(train_accuracy)
+        train_losses.append(train_loss)
+
+
+    return val_accuracies,val_losses,train_accuracies,train_losses,global_model,client_selection_count
+
+
+
+def plot_client_selection(client_selection_count, file_name):
+    """
+    Bar plot to visualize the frequency of client selections in a federated learning simulation.
+    
+    Args:
+        client_selection_count (list): list containing the number of times each client was selected.
+        file_name (str): name of the file to save the plot.
+    """
+    # Fixed base directory
+    directory = '../plots_federated/'
+    # Ensure the base directory exists
+    os.makedirs(directory, exist_ok=True)
+    
+    # Complete path for the file
+    file_path = os.path.join(directory, file_name)
+    
+    num_clients = len(client_selection_count)
+    plt.figure(figsize=(10, 6))
+    plt.bar(range(num_clients), client_selection_count, alpha=0.7, edgecolor='black')
+    plt.xlabel("Client ID", fontsize=14)
+    plt.ylabel("Selection Count", fontsize=14)
+    plt.title("Client Selection Frequency", fontsize=16)
+    plt.xticks(range(num_clients), fontsize=10, rotation=90 if num_clients > 20 else 0)
+    plt.tight_layout()
+    plt.savefig(file_path, format="png", dpi=300)
+    plt.close()
+    
