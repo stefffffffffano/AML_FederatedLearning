@@ -2,12 +2,13 @@ from torch.utils.data import Subset
 from copy import deepcopy
 import torch
 import numpy as np
-from utils import evaluate
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 import os
+from statistics import mean
 import matplotlib.pyplot as plt
+from torch.backends import cudnn
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -104,6 +105,7 @@ def client_update(model, client_id, client_data, criterion, optimizer, local_ste
     Returns:
         dict: The state dictionary of the updated model.
     """
+    cudnn.benchmark  # Calling this optimizes runtime
     model.train()  # Set the model to training mode
     for epoch in range(local_steps):
         for data, targets in client_data:
@@ -129,6 +131,27 @@ def client_update(model, client_id, client_data, criterion, optimizer, local_ste
 
     # Return the updated model's state dictionary (weights)
     return model.state_dict()
+
+def evaluate(model, dataloader):
+    with torch.no_grad():
+        model.train(False) # Set Network to evaluation mode
+        running_corrects = 0
+        losses = []
+        for data, targets in dataloader:
+            data = data.to(DEVICE)        # Move the data to the GPU
+            targets = targets.to(DEVICE)  # Move the targets to the GPU
+            # Forward Pass
+            outputs = model(data)
+            loss = criterion(outputs, targets)
+            losses.append(loss.item())
+            # Get predictions
+            _, preds = torch.max(outputs.data, 1)
+            # Update Corrects
+            running_corrects += torch.sum(preds == targets.data).data.item()
+            # Calculate Accuracy
+            accuracy = running_corrects / float(len(dataloader.dataset))
+
+    return accuracy, mean(losses)
 
 
 def fedavg_aggregate(global_model, client_states, client_sizes):
@@ -164,7 +187,7 @@ def fedavg_aggregate(global_model, client_states, client_sizes):
     return new_state
 
 
-def fedAvg(global_model,dataset, valid_dataset, num_clients,num_classes, rounds,lr,wd, C=0.1, local_steps=4,gamma=None):
+def fedAvg(global_model,training_set, valid_dataset, num_clients,num_classes, rounds,lr,wd, C=0.1, local_steps=4,gamma=None):
     """
     federated averaging algorithm
     Args:
@@ -187,6 +210,7 @@ def fedAvg(global_model,dataset, valid_dataset, num_clients,num_classes, rounds,
         global_model: the trained model
         client_selection_count: the number of times each client has been selected
     """
+    dataset = training_set.dataset
     val_accuracies = []
     val_losses = []
     train_accuracies = []
@@ -198,7 +222,7 @@ def fedAvg(global_model,dataset, valid_dataset, num_clients,num_classes, rounds,
 
     global_model.to(DEVICE) #as alwayse, we move the global model to the specified device (CPU or GPU)
 
-    optimizer = optim.SGD(local_model.parameters(), lr=lr, momentum=0.9, weight_decay=wd)
+    
     # ********************* HOW IT WORKS ***************************************
     # The training runs for rounds iterations (GLOBAL_ROUNDS=2000)
     # Each round simulates one communication step in federated learning, including:
@@ -217,7 +241,7 @@ def fedAvg(global_model,dataset, valid_dataset, num_clients,num_classes, rounds,
         for client_id in selected_clients:
             local_model = deepcopy(global_model) #it creates a local copy of the global model 
             client_loader = DataLoader(shards[client_id], batch_size=32, shuffle=True)
-
+            optimizer = optim.SGD(local_model.parameters(), lr=lr, momentum=0.9, weight_decay=wd)
             local_state = client_update(local_model, client_id, client_loader, criterion, optimizer, local_steps)
             client_states.append(local_state)
 
@@ -226,8 +250,8 @@ def fedAvg(global_model,dataset, valid_dataset, num_clients,num_classes, rounds,
         global_model.load_state_dict(fedavg_aggregate(global_model, client_states, [client_sizes[i] for i in selected_clients]))
 
         # Validation done server side on the validation dataset using the global model
-        val_accuracy, val_loss = evaluate(global_model, valid_dataset, criterion)
-        train_accuracy, train_loss = evaluate(global_model, dataset, criterion)
+        val_accuracy, val_loss = evaluate(global_model, valid_dataset)
+        train_accuracy, train_loss = evaluate(global_model, training_set)
         val_accuracies.append(val_accuracy)
         val_losses.append(val_loss)
         train_accuracies.append(train_accuracy)
