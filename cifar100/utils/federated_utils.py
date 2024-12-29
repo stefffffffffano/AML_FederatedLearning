@@ -240,7 +240,7 @@ def fedAvg(global_model,training_set, valid_dataset, num_clients,num_classes, ro
         # 2) local training: for each client updates the model using the client's data for local_steps epochs
         for client_id in selected_clients:
             local_model = deepcopy(global_model) #it creates a local copy of the global model 
-            client_loader = DataLoader(shards[client_id], batch_size=128, shuffle=True)
+            client_loader = DataLoader(shards[client_id], batch_size=64, shuffle=True)
             optimizer = optim.SGD(local_model.parameters(), lr=lr, momentum=0.9, weight_decay=wd)
             local_state = client_update(local_model, client_id, client_loader, criterion, optimizer, local_steps)
             client_states.append(local_state)
@@ -248,7 +248,6 @@ def fedAvg(global_model,training_set, valid_dataset, num_clients,num_classes, ro
         # 3) central aggregation: aggregates participating client updates using fedavg_aggregate
         #    and replaces the current parameters of global_model with the returned ones.
         global_model.load_state_dict(fedavg_aggregate(global_model, client_states, [client_sizes[i] for i in selected_clients]))
-
         # Validation done server side on the validation dataset using the global model
         
         val_accuracy, val_loss = evaluate(global_model, valid_dataset)
