@@ -63,4 +63,10 @@ Another change we did with respect to the previous configuration was the batch s
 ![alt text](images_report/image-10.png)  
 
 
-As it can be seen from the image, the model is starting overfitting so, probably, increasing the number of epochs wouldn't take so much advantage. But, for the sake of completeness, let's run the last test with a number of epochs equal to 350, parameters set as before.
+As it can be seen from the image, the model is starting overfitting so, probably, increasing the number of epochs wouldn't take so much advantage. But, for the sake of completeness, let's run the last test with a number of epochs equal to 350, parameters set as before.  
+
+![alt text](images_report/image-11.png)  
+
+As anticipated in the previous section, with 100 epochs more, the accuracy on the test set reached 48.3%, which is slightly more with respect to the previous 47.5%. Here is also reported the training and the validation loss:  
+
+![alt text](images_report/image-12.png)
