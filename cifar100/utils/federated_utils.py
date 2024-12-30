@@ -30,18 +30,30 @@ def sharding(dataset, number_of_clients, number_of_classes=100):
     indices = np.random.permutation(len(dataset))
 
     # Compute basic partition sizes
-    basic_partition_size = len(dataset) // number_of_clients
     remainder = len(dataset) % number_of_clients
 
     shards = []
-    start_idx = 0
 
     if number_of_classes == 100:  # IID Case
-        # Equally distribute indices among clients: we can just randomly assign to each client an equal amount of records
-        for i in range(number_of_clients):
-            end_idx = start_idx + basic_partition_size + (1 if i < remainder else 0)
-            shards.append(Subset(dataset, indices[start_idx:end_idx]))
-            start_idx = end_idx
+        # Count of each class in the dataset
+        labels = np.array(dataset.targets)  
+        sorted_indices = indices[np.argsort(labels)]
+
+        # Split indices by class
+        class_indices = [
+            sorted_indices[labels[sorted_indices] == c] for c in range(100)
+        ]
+
+        # Distribute class indices equally among clients
+        for client_id in range(number_of_clients):
+            client_indices = []
+            for class_indices_list in class_indices:
+                num_samples_per_client = len(class_indices_list) // number_of_clients
+                selected_indices = class_indices_list[:num_samples_per_client]
+                client_indices.extend(selected_indices)
+                class_indices_list = class_indices_list[num_samples_per_client:]
+
+            shards.append(Subset(dataset, client_indices))
     else:  # non-IID Case
         # Count of each class in the dataset
         from collections import Counter
