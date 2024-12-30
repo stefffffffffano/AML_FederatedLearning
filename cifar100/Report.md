@@ -10,7 +10,7 @@ Schedulers:
 - StepLR, gamma = 0.1, step_size = num_epochs//3;
 - Cosine annealing, T_max=num_epochs//3, eta_min=1e-4;
 - Exponential LR, gamma = 0.9;
-- Exponential LR, gamma = 0.95.
+
 
 In this first setting, the best configuration we obtained was with the StepLR, LR = 0.005 and WD = 5e-5, with a validation accuracy of 41%. The main problem was related to overfitting. Indeed, as it can be observed in the following plot, the training accuracy reached was approximately 0.8, resulting in a huge gap between the two.
 ![alt text](images_report/image.png)
@@ -48,4 +48,13 @@ Effectively, the test was successful. By changing the scheduler we were able to 
 
 ![alt text](images_report/image-7.png)
 
-In this case, during the test, we noticed that the accuracy was still increasing when the value of the LR was reset because T_max was reached, so, probably, it would benefit also if we decrease T_max to number of epochs divided by 2. We can also try in this case to slightly increase the number of epochs, always trying to mantain the execution time reasonable. In the following test, the scheduler is changed to the previous described one and the number of epochs is increased to 250.
+
+
+We decided to repeat the tests for hyperparameter tuning using a different approach with respect to grid search, which is random search. Instead of defining the hyperparameters, we used a log uniform probability over a range of values. The best hyperparameters we found are the same for what concerns LR and wd (0.01 and 0.0001), but this time the cosine annealing performs slightly better than the exponential: 34.98% vs 34.28%, also in the previous cases they were very close. These are the plots:
+
+![alt text](images_report/image-8.png)
+
+![alt text](images_report/image-9.png)
+
+
+Another change we did with respect to the previous configuration was the batch size increased to 64 (previously it was 32) to be more consistent with the work done in the reference documentation, where a batch size of 64 is often mentioned. Thus, we can repeat again the fianl experiment with cosine annealing, trying this time to increase the number of epochs to see if it works better. Let's try with 250.
