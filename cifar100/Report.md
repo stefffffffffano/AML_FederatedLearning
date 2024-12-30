@@ -57,4 +57,10 @@ We decided to repeat the tests for hyperparameter tuning using a different appro
 ![alt text](images_report/image-9.png)
 
 
-Another change we did with respect to the previous configuration was the batch size increased to 64 (previously it was 32) to be more consistent with the work done in the reference documentation, where a batch size of 64 is often mentioned. Thus, we can repeat again the fianl experiment with cosine annealing, trying this time to increase the number of epochs to see if it works better. Let's try with 250.
+Another change we did with respect to the previous configuration was the batch size increased to 64 (previously it was 32) to be more consistent with the work done in the reference documentation, where a batch size of 64 is often mentioned. Thus, we can repeat again the fianl experiment with cosine annealing, trying this time to increase the number of epochs to see if it works better. Let's try with 250. In this last test, we were able to reach an accuracy on the test set of 47.51%, which is slightly better than the previous one. Here is the training vs validation accuracy plot: 
+
+
+![alt text](images_report/image-10.png)  
+
+
+As it can be seen from the image, the model is starting overfitting so, probably, increasing the number of epochs wouldn't take so much advantage. But, for the sake of completeness, let's run the last test with a number of epochs equal to 350, parameters set as before.
