@@ -9,6 +9,9 @@ import os
 from statistics import mean
 import matplotlib.pyplot as plt
 from torch.backends import cudnn
+import time
+import random
+
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -118,11 +121,18 @@ def client_update(model, client_id, client_data, criterion, optimizer, local_ste
         dict: The state dictionary of the updated model.
     """
 
+
+    cudnn.benchmark  # Calling this optimizes runtime
+
     model.train()  # Set the model to training mode
-    for epoch in range(local_steps):
+    step_count = 0
+    while step_count < local_steps:
         for data, targets in client_data:
             # Move data and targets to the specified device (e.g., GPU or CPU)
             data, targets = data.to(DEVICE), targets.to(DEVICE)
+
+
+            start_time = time.time()  # for testing-----------------------------
 
             # Reset the gradients before backpropagation
             optimizer.zero_grad()
@@ -137,9 +147,20 @@ def client_update(model, client_id, client_data, criterion, optimizer, local_ste
             loss.backward()
             optimizer.step()
 
+            # for testing ------------------------------------------------------
+            if detailed_print:
+              end_time = time.time()  # Record the end time
+              elapsed_time = end_time - start_time  # Calculate the elapsed time
+              print(f'Single step time taken: {elapsed_time:.4f} seconds')
+
+            step_count +=1
+            if step_count >= local_steps:
+              break
+
     # Optionally, print the loss for the last epoch of training
     if detailed_print:
-        print(f'Client {client_id} --> Final Loss (Epoch {epoch + 1}): {loss.item()}')
+        print(f'Client {client_id} --> Final Loss (Step {step_count}/{local_steps}): {loss.item()}')
+
 
     # Return the updated model's state dictionary (weights)
     return model.state_dict()
@@ -199,42 +220,22 @@ def fedavg_aggregate(global_model, client_states, client_sizes):
     return new_state
 
 
-def fedAvg(global_model,training_set, valid_dataset, num_clients,num_classes, rounds,lr,wd, C=0.1, local_steps=4,gamma=None):
-    """
-    federated averaging algorithm
-    Args:
-        global_model: the model to be trained
-        dataset: the training dataset
-        valid_dataset: the validation dataset
-        num_clients: the number of clients
-        num_classes: the number of classes for the non-IID case
-        rounds: the number of communication rounds
-        lr: learning rate
-        wd: weight decay
-        C: fraction of clients to be selected in each round
-        local_steps: the number of local epochs for each client
-        gamma: parameter for the skewed distribution
-    Returns:
-        val_accuracies: list of validation accuracies
-        val_losses: list of validation losses
-        train_accuracies: list of training accuracies
-        train_losses: list of training losses (all the previous ones for each round)
-        global_model: the trained model
-        client_selection_count: the number of times each client has been selected
-    """
-    dataset = training_set.dataset
+# Federated Learning Training Loop
+def train_federated(global_model, criterion, trainloader, validloader, num_clients, num_classes, rounds, lr, momentum, batchsize, wd, C=0.1, local_steps=4, log_freq=10, detailed_print=False):
     val_accuracies = []
     val_losses = []
     train_accuracies = []
     train_losses = []
-    shards = sharding(dataset, num_clients,num_classes) #each shard represent the training data for one client
-    client_sizes = [len(shard) for shard in shards]
     best_model_state = None  # The model with the best accuracy
     client_selection_count = [0] * num_clients #Count how many times a client has been selected
     best_val_acc = 0.0
+
+
+    shards = sharding(trainloader.dataset, num_clients, num_classes) #each shard represent the training data for one client
+    client_sizes = [len(shard) for shard in shards]
+
     global_model.to(DEVICE) #as alwayse, we move the global model to the specified device (CPU or GPU)
 
-    
     # ********************* HOW IT WORKS ***************************************
     # The training runs for rounds iterations (GLOBAL_ROUNDS=2000)
     # Each round simulates one communication step in federated learning, including:
@@ -242,41 +243,56 @@ def fedAvg(global_model,training_set, valid_dataset, num_clients,num_classes, ro
     # 2) local training (of each client)
     # 3) central aggregation
     for round_num in range(rounds):
+        if round_num % log_freq == 0 and detailed_print:
+          print(f"------------------------------------- Round {round_num} ------------------------------------------------" )
+
+        start_time = time.time()  # for testing-----------------------------
+
         # 1) client selection: In each round, a fraction C (e.g., 10%) of clients is randomly selected to participate.
         #     This reduces computation costs and mimics real-world scenarios where not all devices are active.
-        selected_clients = client_selection(num_clients, C, gamma) #if gamma is None, the selection is uniform
+        selected_clients = random.sample(range(num_clients), int(C * num_clients))
         client_states = []
         for client_id in selected_clients:
             client_selection_count[client_id] += 1
 
         # 2) local training: for each client updates the model using the client's data for local_steps epochs
         for client_id in selected_clients:
-            local_model = deepcopy(global_model) #it creates a local copy of the global model 
-            client_loader = DataLoader(shards[client_id], batch_size=64, shuffle=True)
-            optimizer = optim.SGD(local_model.parameters(), lr=lr, momentum=0.9, weight_decay=wd)
-            local_state = client_update(local_model, client_id, client_loader, criterion, optimizer, local_steps)
+            local_model = deepcopy(global_model) #it creates a local copy of the global model
+            optimizer = optim.SGD(local_model.parameters(), lr=lr, momentum=momentum, weight_decay=wd) #same of the centralized version
+            client_loader = DataLoader(shards[client_id], batch_size=batchsize, shuffle=True)
+
+            local_state = client_update(local_model, client_id, client_loader, criterion, optimizer, local_steps, round_num % log_freq == 0 and detailed_print)
             client_states.append(local_state)
 
         # 3) central aggregation: aggregates participating client updates using fedavg_aggregate
         #    and replaces the current parameters of global_model with the returned ones.
         global_model.load_state_dict(fedavg_aggregate(global_model, client_states, [client_sizes[i] for i in selected_clients]))
-        # Validation done server side on the validation dataset using the global model
-        
-        val_accuracy, val_loss = evaluate(global_model, valid_dataset)
+
+        #Validation at the server
+        #if round_num % log_freq:
+        val_accuracy, val_loss = evaluate(global_model, validloader)
+        val_accuracies.append(val_accuracy)
+        val_losses.append(val_loss)
         if val_accuracy > best_val_acc:
             best_val_acc = val_accuracy
             best_model_state = deepcopy(global_model.state_dict())
-        print("Done one round")
-        train_accuracy, train_loss = evaluate(global_model, training_set)
-        val_accuracies.append(val_accuracy)
-        val_losses.append(val_loss)
+
+        train_accuracy, train_loss = evaluate(global_model, trainloader)
         train_accuracies.append(train_accuracy)
         train_losses.append(train_loss)
 
+        if round_num % log_freq == 0 and detailed_print:
+            print(f"------------------------------ Round {round_num} terminated: model updated -----------------------------" )
+            print(f"accuracy: {val_accuracy}, best accuracy: {best_val_acc}")
+            # for testing ------------------------------------------------------
+            end_time = time.time()  # Record the end time
+            elapsed_time = end_time - start_time  # Calculate the elapsed time
+            print(f'Single round time taken: {elapsed_time:.4f} seconds\n\n')
+
+
     global_model.load_state_dict(best_model_state)
 
-    return val_accuracies,val_losses,train_accuracies,train_losses,global_model,client_selection_count
-
+    return global_model, val_accuracies, val_losses, train_accuracies, train_losses, client_selection_count
 
 
 def plot_client_selection(client_selection_count, file_name):
