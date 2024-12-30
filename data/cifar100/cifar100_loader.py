@@ -3,7 +3,7 @@ import torchvision.datasets as datasets
 from torch.utils.data import DataLoader, Subset
 from sklearn.model_selection import train_test_split
 
-def load_cifar100(batch_size=32, validation_split=0.1, download=True):
+def load_cifar100(batch_size=64, validation_split=0.1, download=True):
     # Transformations for training with data augmentation
     train_transform = transforms.Compose([
         transforms.RandomCrop(24, padding=4),
