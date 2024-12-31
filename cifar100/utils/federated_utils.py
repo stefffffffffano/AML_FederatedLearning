@@ -237,9 +237,9 @@ def train_federated(global_model, criterion, trainloader, validloader, num_clien
     client_sizes = [len(shard) for shard in shards]
 
     global_model.to(DEVICE) #as alwayse, we move the global model to the specified device (CPU or GPU)
-    model = global_model
+
     #loading checkpoint if it exists
-    checkpoint_start_step, data_to_load = load_checkpoint(model=model,optimizer=None,hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/")
+    checkpoint_start_step, data_to_load = load_checkpoint(model=global_model,optimizer=None,hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/")
     if data_to_load is not None:
       val_accuracies = data_to_load['val_accuracies']
       val_losses = data_to_load['val_losses']
@@ -305,7 +305,7 @@ def train_federated(global_model, criterion, trainloader, validloader, num_clien
                 'train_losses': train_losses,
                 'client_selection_count': client_selection_count
             }
-            save_checkpoint(model=model, optimizer=None, epoch=round_num, hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/", checkpoint_data=checkpoint_data)
+            save_checkpoint(model=global_model, optimizer=None, epoch=round_num, hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/", checkpoint_data=checkpoint_data)
 
             print(f"------------------------------ Round {round_num} terminated: model updated -----------------------------\n\n" )
 

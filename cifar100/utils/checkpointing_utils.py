@@ -110,3 +110,20 @@ def load_checkpoint(model, optimizer, hyperparameters, subfolder=""):
     # If no checkpoint is found, print a message and start from epoch 1
     print("No checkpoint found, starting from epoch 1..\n\n")
     return 1, None  # Epoch starts from 1
+
+def delete_existing_checkpoints(subfolder=""):
+    """
+    Deletes all existing checkpoints in the specified subfolder.
+    
+    Arguments:
+    subfolder -- Optional subfolder within the checkpoint directory to delete checkpoints from.
+    """
+    subfolder_path = os.path.join(CHECKPOINT_DIR, subfolder)
+    if os.path.exists(subfolder_path):
+        for file_name in os.listdir(subfolder_path):
+            file_path = os.path.join(subfolder_path, file_name)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        print(f"All existing checkpoints in {subfolder_path} have been deleted.")
+    else:
+        print(f"No checkpoint folder found at {subfolder_path}.")
