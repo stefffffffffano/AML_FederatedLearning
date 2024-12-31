@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from torch.backends import cudnn
 import time
 import random
+from checkpointing_utils import load_checkpoint, save_checkpoint
 
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -220,6 +221,8 @@ def fedavg_aggregate(global_model, client_states, client_sizes):
     return new_state
 
 
+import time
+
 # Federated Learning Training Loop
 def train_federated(global_model, criterion, trainloader, validloader, num_clients, num_classes, rounds, lr, momentum, batchsize, wd, C=0.1, local_steps=4, log_freq=10, detailed_print=False):
     val_accuracies = []
@@ -230,11 +233,19 @@ def train_federated(global_model, criterion, trainloader, validloader, num_clien
     client_selection_count = [0] * num_clients #Count how many times a client has been selected
     best_val_acc = 0.0
 
-
     shards = sharding(trainloader.dataset, num_clients, num_classes) #each shard represent the training data for one client
     client_sizes = [len(shard) for shard in shards]
 
     global_model.to(DEVICE) #as alwayse, we move the global model to the specified device (CPU or GPU)
+    model = global_model
+    #loading checkpoint if it exists
+    checkpoint_start_step, data_to_load = load_checkpoint(model=model,optimizer=None,hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/")
+    if data_to_load is not None:
+      val_accuracies = data_to_load['val_accuracies']
+      val_losses = data_to_load['val_losses']
+      train_accuracies = data_to_load['train_accuracies']
+      train_losses = data_to_load['train_losses']
+      client_selection_count = data_to_load['client_selection_count']
 
     # ********************* HOW IT WORKS ***************************************
     # The training runs for rounds iterations (GLOBAL_ROUNDS=2000)
@@ -242,11 +253,11 @@ def train_federated(global_model, criterion, trainloader, validloader, num_clien
     # 1) client selection
     # 2) local training (of each client)
     # 3) central aggregation
-    for round_num in range(rounds):
-        if round_num % log_freq == 0 and detailed_print:
+    for round_num in range(checkpoint_start_step, rounds):
+        if round_num % log_freq == 0:
           print(f"------------------------------------- Round {round_num} ------------------------------------------------" )
 
-        start_time = time.time()  # for testing-----------------------------
+        #start_time = time.time()  # for testing-----------------------------
 
         # 1) client selection: In each round, a fraction C (e.g., 10%) of clients is randomly selected to participate.
         #     This reduces computation costs and mimics real-world scenarios where not all devices are active.
@@ -264,6 +275,7 @@ def train_federated(global_model, criterion, trainloader, validloader, num_clien
             local_state = client_update(local_model, client_id, client_loader, criterion, optimizer, local_steps, round_num % log_freq == 0 and detailed_print)
             client_states.append(local_state)
 
+        
         # 3) central aggregation: aggregates participating client updates using fedavg_aggregate
         #    and replaces the current parameters of global_model with the returned ones.
         global_model.load_state_dict(fedavg_aggregate(global_model, client_states, [client_sizes[i] for i in selected_clients]))
@@ -277,17 +289,31 @@ def train_federated(global_model, criterion, trainloader, validloader, num_clien
             best_val_acc = val_accuracy
             best_model_state = deepcopy(global_model.state_dict())
 
-        train_accuracy, train_loss = evaluate(global_model, trainloader)
-        train_accuracies.append(train_accuracy)
-        train_losses.append(train_loss)
+        if round_num % log_freq == 0:
+            train_accuracy, train_loss = evaluate(global_model, trainloader)
+            train_accuracies.append(train_accuracy)
+            train_losses.append(train_loss)
 
-        if round_num % log_freq == 0 and detailed_print:
-            print(f"------------------------------ Round {round_num} terminated: model updated -----------------------------" )
-            print(f"accuracy: {val_accuracy}, best accuracy: {best_val_acc}")
-            # for testing ------------------------------------------------------
-            end_time = time.time()  # Record the end time
-            elapsed_time = end_time - start_time  # Calculate the elapsed time
-            print(f'Single round time taken: {elapsed_time:.4f} seconds\n\n')
+            print(f"--> best validation accuracy: {best_val_acc}\n--> training accuracy: {train_accuracy}")
+            print(f"--> validation loss: {val_loss}\n--> training loss: {train_loss}")
+
+            # checkpointing
+            checkpoint_data = {
+                'val_accuracies': val_accuracies,
+                'val_losses': val_losses,
+                'train_accuracies': train_accuracies,
+                'train_losses': train_losses,
+                'client_selection_count': client_selection_count
+            }
+            save_checkpoint(model=model, optimizer=None, epoch=round_num, hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/", checkpoint_data=checkpoint_data)
+
+            print(f"------------------------------ Round {round_num} terminated: model updated -----------------------------\n\n" )
+
+
+        # for testing ------------------------------------------------------
+        #end_time = time.time()  # Record the end time
+        #elapsed_time = end_time - start_time  # Calculate the elapsed time
+        #print(f'Single round time taken: {elapsed_time:.4f} seconds\n\n')
 
 
     global_model.load_state_dict(best_model_state)
