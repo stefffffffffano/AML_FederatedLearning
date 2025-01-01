@@ -274,8 +274,8 @@ def train_federated(global_model, criterion, trainloader, validloader, num_clien
     # 2) local training (of each client)
     # 3) central aggregation
     for round_num in range(checkpoint_start_step, rounds):
-        if round_num % log_freq == 0:
-          print(f"------------------------------------- Round {round_num} ------------------------------------------------" )
+        if (round_num+1) % log_freq == 0:
+          print(f"------------------------------------- Round {round_num+1} ------------------------------------------------" )
 
         #start_time = time.time()  # for testing-----------------------------
 
@@ -295,9 +295,9 @@ def train_federated(global_model, criterion, trainloader, validloader, num_clien
             optimizer = optim.SGD(local_model.parameters(), lr=lr, momentum=momentum, weight_decay=wd) #same of the centralized version
             client_loader = DataLoader(shards[client_id], batch_size=batchsize, shuffle=True)
 
-            print_log = round_num % log_freq == 0 and detailed_print
+            print_log =  (round_num+1) % log_freq == 0 and detailed_print
             client_local_state, client_avg_loss, client_avg_accuracy  = client_update(local_model, client_id, client_loader, criterion, optimizer, local_steps, print_log)
-            
+
             client_states.append(client_local_state)
             client_avg_losses.append(client_avg_loss)
             client_avg_accuracies.append(client_avg_accuracy)
@@ -305,11 +305,11 @@ def train_federated(global_model, criterion, trainloader, validloader, num_clien
         # 3) central aggregation: aggregates participating client updates using fedavg_aggregate
         #    and replaces the current parameters of global_model with the returned ones.
         aggregated_state, train_loss, train_accuracy = fedavg_aggregate(global_model, client_states, [client_sizes[i] for i in selected_clients], client_avg_losses, client_avg_accuracies)
-        global_model.load_state_dict(aggregated_state)    
+        global_model.load_state_dict(aggregated_state)
 
         train_accuracies.append(train_accuracy)
         train_losses.append(train_loss)
-        
+
         #Validation at the server
         val_accuracy, val_loss = evaluate(global_model, validloader)
         val_accuracies.append(val_accuracy)
@@ -319,7 +319,7 @@ def train_federated(global_model, criterion, trainloader, validloader, num_clien
             best_val_acc = val_accuracy
             best_model_state = deepcopy(global_model.state_dict())
 
-        if round_num % log_freq == 0:
+        if (round_num+1) % log_freq == 0:
             print(f"--> best validation accuracy: {best_val_acc:.2f} %\n--> training accuracy: {train_accuracy:.2f} %")
             print(f"--> validation loss: {val_loss:.4f}\n--> training loss: {train_loss:.4f}")
 
@@ -333,7 +333,7 @@ def train_federated(global_model, criterion, trainloader, validloader, num_clien
             }
             save_checkpoint(model=global_model, optimizer=None, epoch=round_num, hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/", checkpoint_data=checkpoint_data)
 
-            print(f"------------------------------ Round {round_num} terminated: model updated -----------------------------\n\n" )
+            print(f"------------------------------ Round {round_num+1} terminated: model updated -----------------------------\n\n" )
 
 
         # for testing ------------------------------------------------------
@@ -345,6 +345,7 @@ def train_federated(global_model, criterion, trainloader, validloader, num_clien
     global_model.load_state_dict(best_model_state)
 
     return global_model, val_accuracies, val_losses, train_accuracies, train_losses, client_selection_count
+
 
 def plot_client_selection(client_selection_count, file_name):
     """
