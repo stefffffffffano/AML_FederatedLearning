@@ -320,8 +320,8 @@ def train_federated(global_model, criterion, trainloader, validloader, num_clien
             best_model_state = deepcopy(global_model.state_dict())
 
         if round_num % log_freq == 0:
-            print(f"--> best validation accuracy: {best_val_acc:.2f}%\n--> training accuracy: {train_accuracy:.2f}%")
-            print(f"--> validation loss: {val_loss:.4f}\n--> training loss: {train_loss:.4fs}")
+            print(f"--> best validation accuracy: {best_val_acc:.2f} %\n--> training accuracy: {train_accuracy:.2f} %")
+            print(f"--> validation loss: {val_loss:.4f}\n--> training loss: {train_loss:.4f}")
 
             # checkpointing
             checkpoint_data = {
