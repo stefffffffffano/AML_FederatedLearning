@@ -23,7 +23,7 @@ class LeNet5(nn.Module):
             nn.MaxPool2d(2)
         )
         self.fc_layer = nn.Sequential(
-            nn.Linear(64 * 3 * 3, 384),  # Updated to be consistent with data augmentation
+            nn.Linear(64 * 5 * 5, 384),  # Updated to be consistent with data augmentation
             nn.ReLU(),
             nn.Linear(384, 192),
             nn.ReLU(),
