@@ -1,18 +1,15 @@
-import sys
 import torch
-import torch.nn as nn
 import torch.optim as optim
 from copy import deepcopy
-import random
 import numpy as np
 from torch.utils.data import Subset
-from statistics import mean
-#from cifar100_loader import load_cifar100
-#from models.model import LeNet5 #import the model
 from Client import Client
 import os
 import json
 from torch.utils.data import DataLoader, Subset
+from utils.federated_utils import client_selection
+from utils.utils import evaluate
+from utils.checkpointing_utils import save_checkpoint, load_checkpoint
 
 class Server:
     def __init__(self, global_model, device, CHECKPOINT_DIR):
@@ -67,9 +64,8 @@ class Server:
         return new_state, global_avg_loss, global_avg_accuracy
 
 
-
     # Federated Learning Training Loop
-    def train_federated(self, criterion, trainloader, validloader, num_clients, num_classes, rounds, lr, momentum, batchsize, wd, C=0.1, local_steps=4, log_freq=10, detailed_print=False):
+    def train_federated(self, criterion, trainloader, validloader, num_clients, num_classes, rounds, lr, momentum, batchsize, wd, C=0.1, local_steps=4, log_freq=10, detailed_print=False,gamma=None):
         val_accuracies = []
         val_losses = []
         train_accuracies = []
@@ -84,7 +80,7 @@ class Server:
         self.global_model.to(self.device) #as alwayse, we move the global model to the specified device (CPU or GPU)
 
         #loading checkpoint if it exists
-        checkpoint_start_step, data_to_load = self.load_checkpoint(optimizer=None,hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/")
+        checkpoint_start_step, data_to_load = load_checkpoint(optimizer=None,hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/")
         if data_to_load is not None:
           val_accuracies = data_to_load['val_accuracies']
           val_losses = data_to_load['val_losses']
@@ -103,11 +99,9 @@ class Server:
             if (round_num+1) % log_freq == 0:
               print(f"------------------------------------- Round {round_num+1} ------------------------------------------------" )
 
-            #start_time = time.time()  # for testing-----------------------------
-
             # 1) client selection: In each round, a fraction C (e.g., 10%) of clients is randomly selected to participate.
             #     This reduces computation costs and mimics real-world scenarios where not all devices are active.
-            selected_clients = random.sample(range(num_clients), int(C * num_clients))
+            selected_clients = client_selection(num_clients, C,gamma)
             client_states = []
             client_avg_losses = []
             client_avg_accuracies = []
@@ -124,9 +118,6 @@ class Server:
                 client = Client(client_id, client_loader, local_model, self.device)
                 client_local_state, client_avg_loss, client_avg_accuracy  = client.client_update(client_loader, criterion, optimizer, local_steps, print_log)
 
-                
-
-                #local_state = client.client_update(client_loader, criterion, optimizer, local_steps, round_num % log_freq == 0 and detailed_print)
                 client_states.append(client_local_state)
                 client_avg_losses.append(client_avg_loss)
                 client_avg_accuracies.append(client_avg_accuracy)
@@ -141,16 +132,15 @@ class Server:
             train_accuracies.append(train_accuracy)
             train_losses.append(train_loss)
             #Validation at the server
-            #if round_num % log_freq:
-            val_accuracy, val_loss = self.evaluate(validloader, criterion)
+            val_accuracy, val_loss = evaluate(validloader, criterion)
             val_accuracies.append(val_accuracy)
             val_losses.append(val_loss)
             if val_accuracy > best_val_acc:
                 best_val_acc = val_accuracy
                 best_model_state = deepcopy(self.global_model.state_dict())
 
-            if (round_num+1) % log_freq == 0:
-
+            if (round_num+1) % log_freq == 0 and detailed_print:
+                
                 print(f"--> best validation accuracy: {best_val_acc:.2f}\n--> training accuracy: {train_accuracy:.2f}")
                 print(f"--> validation loss: {val_loss:.4f}\n--> training loss: {train_loss:.4f}")
 
@@ -162,16 +152,9 @@ class Server:
                     'train_losses': train_losses,
                     'client_selection_count': client_selection_count
                 }
-                self.save_checkpoint(optimizer=None, epoch=round_num, hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/", checkpoint_data=checkpoint_data)
+                save_checkpoint(optimizer=None, epoch=round_num, hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/", checkpoint_data=checkpoint_data)
 
-                print(f"------------------------------ Round {round_num} terminated: model updated -----------------------------\n\n" )
-
-
-            # for testing ------------------------------------------------------
-            #end_time = time.time()  # Record the end time
-            #elapsed_time = end_time - start_time  # Calculate the elapsed time
-            #print(f'Single round time taken: {elapsed_time:.4f} seconds\n\n')
-
+                print(f"------------------------------ Round {round_num+1} terminated: model updated -----------------------------\n\n" )
 
         self.global_model.load_state_dict(best_model_state)
 
@@ -225,150 +208,3 @@ class Server:
                 shards.append(Subset(dataset, indices=client_indices))
 
         return shards
-    
-
-    def evaluate(self, dataloader, criterion):
-
-        with torch.no_grad():
-            self.global_model.train(False) # Set Network to evaluation mode
-            running_corrects = 0
-            losses = []
-
-            for data, targets in dataloader:
-                data = data.to(self.device)        # Move the data to the GPU
-                targets = targets.to(self.device)  # Move the targets to the GPU
-
-                # Forward Pass
-                outputs = self.global_model(data)
-                loss = criterion(outputs, targets)
-                losses.append(loss.item())
-                # Get predictions
-                _, preds = torch.max(outputs.data, 1)
-                # Update Corrects
-                running_corrects += torch.sum(preds == targets.data).data.item()
-                # Calculate Accuracy
-                accuracy = running_corrects / float(len(dataloader.dataset))
-
-        return accuracy, mean(losses)
-    
-
-    def save_checkpoint(self, optimizer, epoch, hyperparameters, subfolder="", checkpoint_data=None):
-        """
-        Saves the model checkpoint and removes the previous one if it exists.
-
-        Arguments:
-        model -- The model whose state is to be saved.
-        optimizer -- The optimizer whose state is to be saved (can be None).
-        epoch -- The current epoch of the training process.
-        hyperparameters -- A string representing the model's hyperparameters for file naming.
-        subfolder -- Optional subfolder within the checkpoint directory to save the checkpoint.
-        checkpoint_data -- Data to save in a JSON file (e.g., training logs).
-        """
-        # Define the path for the subfolder where checkpoints will be stored
-        subfolder_path = os.path.join(self.CHECKPOINT_DIR, subfolder)
-        # Create the subfolder if it doesn't exist
-        os.makedirs(subfolder_path, exist_ok=True)
-
-        # Construct filenames for both the model checkpoint and the associated JSON file
-        filename = f"model_epoch_{epoch}_params_{hyperparameters}.pth"
-        filepath = os.path.join(subfolder_path, filename)
-        filename_json = f"model_epoch_{epoch}_params_{hyperparameters}.json"
-        filepath_json = os.path.join(subfolder_path, filename_json)
-
-        # Define the filenames for the previous checkpoint files, to remove them if necessary
-        previous_filepath = os.path.join(subfolder_path, f"model_epoch_{epoch - 1}_params_{hyperparameters}.pth")
-        previous_filepath_json = os.path.join(subfolder_path, f"model_epoch_{epoch - 1}_params_{hyperparameters}.json")
-
-        # Remove the previous checkpoint if it exists, but only for epochs greater than 1
-        if epoch > 1 and os.path.exists(previous_filepath):
-            os.remove(previous_filepath)
-            os.remove(previous_filepath_json)
-
-        # Prepare the checkpoint data dictionary
-        checkpoint = {'model_state_dict': self.global_model.state_dict(), 'epoch': epoch}
-        # If an optimizer is provided, save its state as well
-        if optimizer is not None:
-            checkpoint['optimizer_state_dict'] = optimizer.state_dict()
-
-        # Save the model and optimizer (if provided) state dictionary to the checkpoint file
-        torch.save(checkpoint, filepath)
-        print(f"Checkpoint saved: {filepath}")
-
-        # If additional data (e.g., training logs) is provided, save it to a JSON file
-        if checkpoint_data:
-            with open(filepath_json, 'w') as json_file:
-                json.dump(checkpoint_data, json_file, indent=4)
-
-
-    def load_checkpoint(self, optimizer, hyperparameters, subfolder=""):
-        """
-        Loads the latest checkpoint available based on the specified hyperparameters.
-
-        Arguments:
-        model -- The model whose state will be updated from the checkpoint.
-        optimizer -- The optimizer whose state will be updated from the checkpoint (can be None).
-        hyperparameters -- A string representing the model's hyperparameters for file naming.
-        subfolder -- Optional subfolder within the checkpoint directory to look for checkpoints.
-
-        Returns:
-        The next epoch to resume from and the associated JSON data if available.
-        """
-        # Define the path to the subfolder where checkpoints are stored
-        subfolder_path = os.path.join(self.CHECKPOINT_DIR, subfolder)
-
-        # If the subfolder doesn't exist, print a message and start from epoch 1
-        if not os.path.exists(subfolder_path):
-            print("No checkpoint found, starting from epoch 1.")
-            return 1, None  # Epoch starts from 1
-
-        # Search for checkpoint files in the subfolder that match the hyperparameters
-        files = [f for f in os.listdir(subfolder_path) if f"params_{hyperparameters}" in f and f.endswith('.pth')]
-
-        # If checkpoint files are found, load the one with the highest epoch number
-        if files:
-            latest_file = max(files, key=lambda x: int(x.split('_')[2]))  # Find the latest epoch file
-            filepath = os.path.join(subfolder_path, latest_file)
-            checkpoint = torch.load(filepath, weights_only=True)
-
-            # Load the model state from the checkpoint
-            self.global_model.load_state_dict(checkpoint['model_state_dict'])
-            # If an optimizer is provided, load its state as well
-            if optimizer:
-                optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-
-            # Try to load the associated JSON file if available
-            json_filepath = os.path.join(subfolder_path, latest_file.replace('.pth', '.json'))
-            json_data = None
-            if os.path.exists(json_filepath):
-                # If the JSON file exists, load its contents
-                with open(json_filepath, 'r') as json_file:
-                    json_data = json.load(json_file)
-                print("Data loaded!")
-            else:
-                # If no JSON file exists, print a message
-                print("No data found")
-
-            # Print the epoch from which the model is resuming
-            print(f"Checkpoint found: Resuming from epoch {checkpoint['epoch'] + 1}\n\n")
-            return checkpoint['epoch'] + 1, json_data
-
-        # If no checkpoint is found, print a message and start from epoch 1
-        print("No checkpoint found, starting from epoch 1..\n\n")
-        return 1, None  # Epoch starts from 1
-    
-    def delete_existing_checkpoints(self,subfolder=""):
-        """
-        Deletes all existing checkpoints in the specified subfolder.
-
-        Arguments:
-        subfolder -- Optional subfolder within the checkpoint directory to delete checkpoints from.
-        """
-        subfolder_path = os.path.join(self.CHECKPOINT_DIR, subfolder)
-        if os.path.exists(subfolder_path):
-            for file_name in os.listdir(subfolder_path):
-                file_path = os.path.join(subfolder_path, file_name)
-                if os.path.isfile(file_path):
-                    os.remove(file_path)
-            print(f"All existing checkpoints in {subfolder_path} have been deleted.")
-        else:
-            print(f"No checkpoint folder found at {subfolder_path}.")
