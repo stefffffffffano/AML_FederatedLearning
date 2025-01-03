@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-from utils import evaluate
+from .utils import evaluate
 
 
 def client_selection(number_of_clients, clients_fraction, gamma=None):

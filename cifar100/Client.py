@@ -46,9 +46,6 @@ class Client:
                 # Move data and targets to the specified device (e.g., GPU or CPU)
                 data, targets = data.to(self.device), targets.to(self.device)
 
-
-                start_time = time.time()  # for testing-----------------------------
-
                 # Reset the gradients before backpropagation
                 optimizer.zero_grad()
 

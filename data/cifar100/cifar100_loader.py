@@ -4,7 +4,7 @@ from torchvision import datasets, transforms
 from sklearn.model_selection import train_test_split
 
 class CIFAR100DataLoader:
-    def __init__(self, batch_size=64, validation_split=0.1, download=True, num_workers=4, pin_memory=True):
+    def __init__(self, batch_size=64, validation_split=0.1, download=True, num_workers=0, pin_memory=True):
         self.batch_size = batch_size
         self.validation_split = validation_split
         self.download = download
