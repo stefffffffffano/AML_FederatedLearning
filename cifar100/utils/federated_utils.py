@@ -133,7 +133,7 @@ def save_data(global_model, val_accuracies, val_losses, train_accuracies, train_
         file_name (str): Name of the file to save the data.
     """
     # Fixed base directory
-    directory = '../models_federated/'
+    directory = './trained_models/'
     # Ensure the base directory exists
     os.makedirs(directory, exist_ok=True)
     
@@ -165,7 +165,7 @@ def load_data(model, file_name):
         tuple: A tuple containing the model, val_accuracies, val_losses, train_accuracies, and train_losses.
     """
     # Fixed base directory
-    directory = '../models_federated/'
+    directory = './trained_models/'
     # Complete path for the file
     file_path = os.path.join(directory, file_name)
     
