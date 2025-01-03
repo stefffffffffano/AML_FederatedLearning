@@ -5,7 +5,6 @@ import numpy as np
 from torch.utils.data import Subset
 from Client import Client
 import os
-import json
 from torch.utils.data import DataLoader, Subset
 from utils.federated_utils import client_selection
 from utils.utils import evaluate
@@ -80,7 +79,7 @@ class Server:
         self.global_model.to(self.device) #as alwayse, we move the global model to the specified device (CPU or GPU)
 
         #loading checkpoint if it exists
-        checkpoint_start_step, data_to_load = load_checkpoint(optimizer=None,hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/")
+        checkpoint_start_step, data_to_load = load_checkpoint(model=self.global_model,optimizer=None,hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/")
         if data_to_load is not None:
           val_accuracies = data_to_load['val_accuracies']
           val_losses = data_to_load['val_losses']
@@ -96,7 +95,7 @@ class Server:
         # 2) local training (of each client)
         # 3) central aggregation
         for round_num in range(checkpoint_start_step, rounds):
-            if (round_num+1) % log_freq == 0:
+            if (round_num+1) % log_freq == 0 and detailed_print:
               print(f"------------------------------------- Round {round_num+1} ------------------------------------------------" )
 
             # 1) client selection: In each round, a fraction C (e.g., 10%) of clients is randomly selected to participate.
@@ -132,7 +131,7 @@ class Server:
             train_accuracies.append(train_accuracy)
             train_losses.append(train_loss)
             #Validation at the server
-            val_accuracy, val_loss = evaluate(validloader, criterion)
+            val_accuracy, val_loss = evaluate(self.global_model, validloader)
             val_accuracies.append(val_accuracy)
             val_losses.append(val_loss)
             if val_accuracy > best_val_acc:
