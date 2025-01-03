@@ -72,15 +72,15 @@ def test(global_model, test_loader):
     test_accuracy, _ = evaluate(global_model, test_loader)
     return test_accuracy
 
-def plot_metrics(train_losses, train_accuracies, val_losses, val_accuracies, file_name):
+def plot_metrics(train_accuracies, train_losses, val_accuracies,val_losses, file_name):
     """
     Plot the training and validation metrics for a federated learning simulation.
     
     Args:
-        train_losses (list): List of training losses.
         train_accuracies (list): List of training accuracies.
-        val_losses (list): List of validation losses.
+        train_losses (list): List of training losses.
         val_accuracies (list): List of validation accuracies.
+        val_losses (list): List of validation losses.
         file_name (str): Name of the file to save the plot.
     """
     # Fixed base directory
@@ -98,7 +98,7 @@ def plot_metrics(train_losses, train_accuracies, val_losses, val_accuracies, fil
     plt.figure(figsize=(10, 6))
     plt.plot(epochs, train_losses, label='Train Loss', color='blue')
     plt.plot(epochs, val_losses, label='Validation Loss', color='red')
-    plt.xlabel('Epoch', fontsize=14)
+    plt.xlabel('Rounds', fontsize=14)
     plt.ylabel('Loss', fontsize=14)
     plt.title('Training and Validation Loss', fontsize=16)
     plt.legend()
@@ -111,20 +111,19 @@ def plot_metrics(train_losses, train_accuracies, val_losses, val_accuracies, fil
     plt.figure(figsize=(10, 6))
     plt.plot(epochs, train_accuracies, label='Train Accuracy', color='blue')
     plt.plot(epochs, val_accuracies, label='Validation Accuracy', color='red')
-    plt.xlabel('Epoch', fontsize=14)
+    plt.xlabel('Rounds', fontsize=14)
     plt.ylabel('Accuracy', fontsize=14)
     plt.title('Training and Validation Accuracy', fontsize=16)
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.show()
     plt.savefig(file_path.replace('.png', '_accuracy.png'), format='png', dpi=300)
     plt.close()
     
 
-def save_data(global_model, val_accuracies, val_losses, train_accuracies, train_losses, file_name):
+def save_data(global_model, val_accuracies, val_losses, train_accuracies, train_losses,client_count, file_name):
     """
-    Save the global model, val_accuracies, val_losses, train_accuracies, and train_losses to a file.
+    Save the global model, val_accuracies, val_losses, train_accuracies,train_losses and client_count to a file.
     
     Args:
         global_model (nn.Module): The global model to be saved.
@@ -148,7 +147,8 @@ def save_data(global_model, val_accuracies, val_losses, train_accuracies, train_
         'val_accuracies': val_accuracies,
         'val_losses': val_losses,
         'train_accuracies': train_accuracies,
-        'train_losses': train_losses
+        'train_losses': train_losses,
+        'client_count': client_count
     }
     
     # Save the dictionary to the specified file
@@ -164,7 +164,7 @@ def load_data(model, file_name):
         file_name (str): Name of the file to load the data from.
     
     Returns:
-        tuple: A tuple containing the model, val_accuracies, val_losses, train_accuracies, and train_losses.
+        tuple: A tuple containing the model, val_accuracies, val_losses, train_accuracies train_losses and client_count.
     """
     # Fixed base directory
     directory = './trained_models/'
@@ -182,7 +182,8 @@ def load_data(model, file_name):
     val_losses = save_dict['val_losses']
     train_accuracies = save_dict['train_accuracies']
     train_losses = save_dict['train_losses']
+    client_count = save_dict['client_count']
     
     print(f"Data loaded successfully from {file_path}")
     
-    return model, val_accuracies, val_losses, train_accuracies, train_losses
+    return model, val_accuracies, val_losses, train_accuracies, train_losses,client_count
