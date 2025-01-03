@@ -84,7 +84,7 @@ def plot_metrics(train_losses, train_accuracies, val_losses, val_accuracies, fil
         file_name (str): Name of the file to save the plot.
     """
     # Fixed base directory
-    directory = '../plots_federated/'
+    directory = './plots_federated/'
     # Ensure the base directory exists
     os.makedirs(directory, exist_ok=True)
     
@@ -96,8 +96,8 @@ def plot_metrics(train_losses, train_accuracies, val_losses, val_accuracies, fil
     
     # Plot the training and validation losses
     plt.figure(figsize=(10, 6))
-    plt.plot(epochs, train_losses, label='Train Loss', color='blue', marker='o')
-    plt.plot(epochs, val_losses, label='Validation Loss', color='red', marker='x')
+    plt.plot(epochs, train_losses, label='Train Loss', color='blue')
+    plt.plot(epochs, val_losses, label='Validation Loss', color='red')
     plt.xlabel('Epoch', fontsize=14)
     plt.ylabel('Loss', fontsize=14)
     plt.title('Training and Validation Loss', fontsize=16)
@@ -109,16 +109,18 @@ def plot_metrics(train_losses, train_accuracies, val_losses, val_accuracies, fil
     
     # Plot the training and validation accuracies
     plt.figure(figsize=(10, 6))
-    plt.plot(epochs, train_accuracies, label='Train Accuracy', color='blue', marker='o')
-    plt.plot(epochs, val_accuracies, label='Validation Accuracy', color='red', marker='x')
+    plt.plot(epochs, train_accuracies, label='Train Accuracy', color='blue')
+    plt.plot(epochs, val_accuracies, label='Validation Accuracy', color='red')
     plt.xlabel('Epoch', fontsize=14)
     plt.ylabel('Accuracy', fontsize=14)
     plt.title('Training and Validation Accuracy', fontsize=16)
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
+    plt.show()
     plt.savefig(file_path.replace('.png', '_accuracy.png'), format='png', dpi=300)
     plt.close()
+    
 
 def save_data(global_model, val_accuracies, val_losses, train_accuracies, train_losses, file_name):
     """

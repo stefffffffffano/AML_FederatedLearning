@@ -28,4 +28,4 @@ def evaluate(model, dataloader):
             # Calculate Accuracy
             accuracy = running_corrects / float(len(dataloader.dataset))
 
-    return accuracy, mean(losses)
+    return accuracy*100, mean(losses)
