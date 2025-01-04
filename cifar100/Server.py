@@ -138,10 +138,10 @@ class Server:
                 best_val_acc = val_accuracy
                 best_model_state = deepcopy(self.global_model.state_dict())
 
-            if (round_num+1) % log_freq == 0 and detailed_print:
-                
-                print(f"--> best validation accuracy: {best_val_acc:.2f}\n--> training accuracy: {train_accuracy:.2f}")
-                print(f"--> validation loss: {val_loss:.4f}\n--> training loss: {train_loss:.4f}")
+            if (round_num+1) % log_freq == 0:
+                if detailed_print:
+                    print(f"--> best validation accuracy: {best_val_acc:.2f}\n--> training accuracy: {train_accuracy:.2f}")
+                    print(f"--> validation loss: {val_loss:.4f}\n--> training loss: {train_loss:.4f}")
 
                 # checkpointing
                 checkpoint_data = {
@@ -151,9 +151,9 @@ class Server:
                     'train_losses': train_losses,
                     'client_selection_count': client_selection_count
                 }
-                save_checkpoint(optimizer=None, epoch=round_num, hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/", checkpoint_data=checkpoint_data)
-
-                print(f"------------------------------ Round {round_num+1} terminated: model updated -----------------------------\n\n" )
+                save_checkpoint(self.global_model,optimizer=None, epoch=round_num, hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/", checkpoint_data=checkpoint_data)
+                if detailed_print:
+                    print(f"------------------------------ Round {round_num+1} terminated: model updated -----------------------------\n\n" )
 
         self.global_model.load_state_dict(best_model_state)
 
