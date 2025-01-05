@@ -5,32 +5,6 @@ import matplotlib.pyplot as plt
 from .utils import evaluate
 
 
-def client_selection(number_of_clients, clients_fraction, gamma=None):
-    """
-    Selects a subset of clients based on uniform or skewed distribution.
-    
-    Args:
-    number_of_clients (int): Total number of clients.
-    clients_fraction (float): Fraction of clients to be selected.
-    uniform (bool): If True, selects clients uniformly. If False, selects clients based on a skewed distribution.
-    gamma (float): Hyperparameter for the Dirichlet distribution controlling the skewness (only used if uniform=False).
-    
-    Returns:
-    list: List of selected client indices.
-    """
-    num_clients_to_select = int(number_of_clients * clients_fraction)
-    
-    if gamma is None:
-        # Uniformly select clients without replacement
-        selected_clients = np.random.choice(number_of_clients, num_clients_to_select, replace=False)
-    else:
-        # Generate skewed probabilities using a Dirichlet distribution
-        probabilities = np.random.dirichlet(np.ones(number_of_clients) * gamma)
-        selected_clients = np.random.choice(number_of_clients, num_clients_to_select, replace=False, p=probabilities)
-    
-    return selected_clients
-   
-
 def plot_client_selection(client_selection_count, file_name):
     """
     Bar plot to visualize the frequency of client selections in a federated learning simulation.
@@ -182,7 +156,11 @@ def load_data(model, file_name):
     val_losses = save_dict['val_losses']
     train_accuracies = save_dict['train_accuracies']
     train_losses = save_dict['train_losses']
-    client_count = save_dict['client_count']
+    #check if client_count is present in the dictionary
+    if 'client_count' not in save_dict:
+        client_count = 0
+    else:
+        client_count = save_dict['client_count']
     
     print(f"Data loaded successfully from {file_path}")
     
