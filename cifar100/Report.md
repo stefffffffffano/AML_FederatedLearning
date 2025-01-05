@@ -27,7 +27,6 @@ Here we show also train and validation losses:
 
 # Federated CIFAR-100
 
-
 (All the results of hyperparameter tuning are not report for brevity, but they are all available in the folder federated_plots)
 
 For the federated setting, the tests for hyperparamter tuning brought us to this configuration: lr=0.1 and wd = 0.001, reaching a final accuracy of 47.81%. Here we report training and validation accuracies over 2000 rounds:  
@@ -62,45 +61,26 @@ With gamma = 5, the best hyperparameters found are: lr = 0.1 and wd = 0.0001. We
 
 We report here validation and training accuracies for gamma = 5, followed by validation and training loss. Finally, a bar plot reporting the frequency of client selection is also reported. The same order will be followed also for other values of gamma, so it won't be specified again. Comments will follow at the end.  
 
-![alt text](image.png)  
-
-![alt text](image-2.png)  
-
-
-![alt text](image-1.png)  
 
 # Gamma = 1    
 
 Accuracy reached on the test set after 2000 communication rounds: 45.83 %
 
 
-![alt text](image-3.png)  
-
-![alt text](image-4.png)  
-
-![alt text](image-5.png)  
+ 
 
 
 # Gamma = 0.5  
 
-Accuracy reached on the test set after 2000 communication rounds: 46.27 % 
+Accuracy reached on the test set after 2000 communication rounds: 29.02% % 
 
-![alt text](image-6.png)  
 
-![alt text](image-7.png)  
-
-![alt text](image-8.png)  
 
 
 # Gamma = 0.05  
 
 Accuracy reached on the test set after 2000 communication rounds: 47.04 %  
 
-![alt text](image-9.png)  
-
-![alt text](image-10.png)  
-
-![alt text](image-11.png)    
 
 
 
