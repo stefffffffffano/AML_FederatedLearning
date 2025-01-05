@@ -6,7 +6,6 @@ from torch.utils.data import Subset
 from Client import Client
 import os
 from torch.utils.data import DataLoader, Subset
-from utils.federated_utils import client_selection
 from utils.utils import evaluate
 from utils.checkpointing_utils import save_checkpoint, load_checkpoint
 
@@ -86,7 +85,9 @@ class Server:
           train_accuracies = data_to_load['train_accuracies']
           train_losses = data_to_load['train_losses']
           client_selection_count = data_to_load['client_selection_count']
-
+        probabilities = None
+        if gamma is not None:
+            probabilities = self.skewed_probabilities(num_clients, gamma)
 
         # ********************* HOW IT WORKS ***************************************
         # The training runs for rounds iterations (GLOBAL_ROUNDS=2000)
@@ -100,7 +101,7 @@ class Server:
 
             # 1) client selection: In each round, a fraction C (e.g., 10%) of clients is randomly selected to participate.
             #     This reduces computation costs and mimics real-world scenarios where not all devices are active.
-            selected_clients = client_selection(num_clients, C,gamma)
+            selected_clients = self.client_selection(num_clients, C,probabilities)
             client_states = []
             client_avg_losses = []
             client_avg_accuracies = []
@@ -158,6 +159,36 @@ class Server:
         self.global_model.load_state_dict(best_model_state)
 
         return self.global_model, val_accuracies, val_losses, train_accuracies, train_losses, client_selection_count
+
+    def skewed_probabilities(self, number_of_clients, gamma=0.5):
+            # Generate skewed probabilities using a Dirichlet distribution
+            probabilities = np.random.dirichlet(np.ones(number_of_clients) * gamma)
+            return probabilities
+
+    def client_selection(self,number_of_clients, clients_fraction, probabilities=None):
+        """
+        Selects a subset of clients based on uniform or skewed distribution.
+        
+        Args:
+        number_of_clients (int): Total number of clients.
+        clients_fraction (float): Fraction of clients to be selected.
+        uniform (bool): If True, selects clients uniformly. If False, selects clients based on a skewed distribution.
+        gamma (float): Hyperparameter for the Dirichlet distribution controlling the skewness (only used if uniform=False).
+        
+        Returns:
+        list: List of selected client indices.
+        """
+        num_clients_to_select = int(number_of_clients * clients_fraction)
+        
+        if probabilities is None:
+            # Uniformly select clients without replacement
+            selected_clients = np.random.choice(number_of_clients, num_clients_to_select, replace=False)
+        else:
+            selected_clients = np.random.choice(number_of_clients, num_clients_to_select, replace=False, p=probabilities)
+        
+        return selected_clients
+
+
 
     def sharding(self, dataset, number_of_clients, number_of_classes=100):
         """
