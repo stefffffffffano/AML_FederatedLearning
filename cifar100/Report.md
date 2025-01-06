@@ -55,32 +55,63 @@ Let's test what happens with different values of gamma:
 
 # Gamma = 5    
 
-Accuracy reached on the test set after 2000 communication rounds: 45.71 %
+Accuracy reached on the test set after 2000 communication rounds:  43.75%
 
 With gamma = 5, the best hyperparameters found are: lr = 0.1 and wd = 0.0001. We found the exact same results for all the other values of gamma, so we won't report them again. The only exception is for gamma = 0.05, where the best wd was equal to 0.001.  
 
-We report here validation and training accuracies for gamma = 5, followed by validation and training loss. Finally, a bar plot reporting the frequency of client selection is also reported. The same order will be followed also for other values of gamma, so it won't be specified again. Comments will follow at the end.  
+We report here validation and training accuracies for gamma = 5, followed by validation and training loss. Finally, a bar plot reporting the frequency of client selection is also reported. The same order will be followed also for other values of gamma, so it won't be specified again. Comments will follow at the end.    
+
+
+![alt text](images_report/image-4.png)
+
+![alt text](images_report/image-5.png)  
+
+![alt text](images_report/image-6.png)  
+
 
 
 # Gamma = 1    
 
-Accuracy reached on the test set after 2000 communication rounds: 45.83 %
+Accuracy reached on the test set after 2000 communication rounds: 40.93%
 
+
+![alt text](images_report/image-7.png)  
+
+![alt text](images_report/image-8.png)  
+
+![alt text](images_report/image-9.png)  
 
  
 
-
 # Gamma = 0.5  
 
-Accuracy reached on the test set after 2000 communication rounds: 29.02% % 
+Accuracy reached on the test set after 2000 communication rounds: 40.01
+
+![alt text](images_report/image-10.png)  
+
+![alt text](images_report/image-11.png)   
+
+![alt text](images_report/image-12.png)  
 
 
 
 
 # Gamma = 0.05  
 
-Accuracy reached on the test set after 2000 communication rounds: 47.04 %  
+Accuracy reached on the test set after 2000 communication rounds: 29.02%  
 
 
+![alt text](images_report/image-13.png)  
+
+![alt text](images_report/image-14.png)  
+
+![alt text](images_report/image-15.png)    
+
+# Comparison  
+
+![alt text](images_report/image-16.png)  
+
+As we can observe from the plot, the accuracy on the test set decreases with the value of gamma. Obviously, when only a small percentage of clients is selected, the model performs very well on the data of those clients, without being able of generalizing. Basically, the model overfits and, even if data are IID among clients, it doesn't train on sufficiently different examples when gamma is really low (e.g.: gamma = 0.05), but still it is able to perform reasonably good when gamma represents a more real situation (gamma = 1 or gamma = 0.5). The use of gamma = 0.05 was done on purpose to verify what happens in a very edge case, difficult to be produced in reality.   
 
 
+As we can see from the plot, the baseline without skewed participation is the one that performs better, followd, as previsioned in the introduction to the experiments, by the one with gamma = 5, which, as we can observe from client selection plots, isn't really unifor but almost. With higher values of gamma, we expect the model to perform as well as the baseline, while, with lower values of gamma, overfitting would make the test accuracy worst and worst.
