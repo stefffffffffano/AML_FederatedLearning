@@ -8,6 +8,10 @@ import os
 from torch.utils.data import DataLoader, Subset
 from utils.utils import evaluate
 from utils.checkpointing_utils import save_checkpoint, load_checkpoint
+import random
+import logging
+
+log = logging.getLogger(__name__)
 
 class Server:
     def __init__(self, global_model, device, CHECKPOINT_DIR):
@@ -190,51 +194,107 @@ class Server:
 
 
 
-    def sharding(self, dataset, number_of_clients, number_of_classes=100):
+    def sharding(self, dataset, number_of_clients, number_of_classes=100, balanced_dataset=True):
         """
         Function that performs the sharding of the dataset given as input.
-        dataset: dataset to be split;
-        number_of_clients: the number of partitions we want to obtain;
-        number_of_classes: (int) the number of classes inside each partition, or 100 for IID;
+        dataset: dataset to be split (should be a PyTorch dataset or similar);
+        number_of_clients: the number of partitions we want to obtain (e.g., 100 for 100 clients);
+        number_of_classes: (int) the number of classes inside each partition, or 100 for IID (default to 100).
         """
 
-        # Validation of input parameters
+        # Validate the number of classes input
         if not (1 <= number_of_classes <= 100):
             raise ValueError("number_of_classes should be an integer between 1 and 100")
 
         # Shuffle dataset indices for randomness
         indices = np.random.permutation(len(dataset))
 
-        # Compute basic partition sizes
-        basic_partition_size = len(dataset) // number_of_clients
-        remainder = len(dataset) % number_of_clients
-
-        shards = []
-        start_idx = 0
-
         if number_of_classes == 100:  # IID Case
-            # Equally distribute indices among clients: we can just randomly assign to each client an equal amount of records
+            # Equally distribute indices among clients: we can just randomly assign an equal number of records to each client
+            
+            # Compute basic partition sizes
+            basic_partition_size = len(dataset) // number_of_clients
+            remainder = len(dataset) % number_of_clients
+
+            shards = []  # This will hold the final dataset shards
+            start_idx = 0
+
             for i in range(number_of_clients):
                 end_idx = start_idx + basic_partition_size + (1 if i < remainder else 0)
                 shards.append(Subset(dataset, indices[start_idx:end_idx]))
                 start_idx = end_idx
+            return shards
+
         else:  # non-IID Case
-            # Count of each class in the dataset
-            from collections import Counter
-            target_counts = Counter(target for _, target in dataset)
+            # Get labels for sorting
+            images = np.array([dataset[i][0] for i in range(len(dataset))])  # Assuming each sample is a tuple (data, label)
+            labels = np.array([dataset[i][1] for i in range(len(dataset))]) 
+            TOTAL_NUM_CLASSES = len(set(labels))
 
-            # Calculate per client class allocation
-            class_per_client = np.random.choice(list(target_counts.keys()), size=number_of_classes, replace=False)
-            class_idx = {class_: np.where([target == class_ for _, target in dataset])[0] for class_ in class_per_client}
+            shard_size = len(dataset) // (number_of_clients * number_of_classes)  # Shard size for each class per client
+            print("dataset len: ", len(dataset), ", shard size: ", shard_size, ", number of shards: ",(number_of_clients * number_of_classes))
+            if shard_size == 0:
+                raise ValueError("Shard size is too small; increase dataset size or reduce number of clients/classes.")
 
-            # Assign class indices evenly to clients
-            for i in range(number_of_clients):
-                client_indices = np.array([], dtype=int)
-                for class_ in class_per_client:
-                    n_samples = len(class_idx[class_]) // number_of_clients + (1 if i < remainder else 0)
-                    client_indices = np.concatenate((client_indices, class_idx[class_][:n_samples]))
-                    class_idx[class_] = np.delete(class_idx[class_], np.arange(n_samples))
 
-                shards.append(Subset(dataset, indices=client_indices))
+            # Divide the dataset into shards, each containing samples from one class
+            shards = {}
+            for i in range(TOTAL_NUM_CLASSES):  
+                # Filter samples for the current class
+                class_samples = [(images[j], labels[j]) for j in range(len(labels)) if labels[j] == i]
+                shards_of_class_i = []
+                # While there are enough samples to form a shard
+                while len(class_samples) >= shard_size:
+                    # Take a shard of shard_size samples
+                    shards_of_class_i.append(class_samples[:shard_size])
+                    # Remove the shard_size samples from class_samples
+                    class_samples = class_samples[shard_size:]
+                # Add the last shard (which might be smaller than shard_size)
+                if class_samples:
+                    shards_of_class_i.append(class_samples)
+                # Store the class shards
+                shards[i] = shards_of_class_i  # Store shards by class
+      
+            client_shards = []  # List to store the dataset for each client
+            available_classes = list(shards.keys())  # List of available classes (0-99)
+            
+            for client_id in range(number_of_clients):
+                
+                client_labels=[]
+              
+                if balanced_dataset:
+                  client_labels = [label % TOTAL_NUM_CLASSES for label in range(client_id * number_of_classes, client_id * number_of_classes + number_of_classes)]
+                else:
+                  # Filter classes that have at least one available shard
+                  classes_with_shards = [label for label in available_classes if len(shards[label])>0] 
 
-        return shards
+                  # Check if we do not have enough classes with available shards 
+                  if len(classes_with_shards) < number_of_classes:
+                      log.warning(f"Not enough classes with available shards for client {client_id}. Required: {number_of_classes}, Available: {len(classes_with_shards)}.")
+                      # Handle the case when there aren't enough available classes
+                      # Reduce number_of_classes for this client (and proceed with fewer classes)
+                      number_of_classes = len(classes_with_shards)  # Use the remaining classes if we cannot satisfy number_of_classes
+                      client_labels = classes_with_shards  # Take all the remaining classes for this client
+                  else: 
+                      # Randomly select number_of_classes classes with available shards
+                      client_labels = random.sample(classes_with_shards, number_of_classes)
+              
+                #print(client_labels)
+
+                # Collect the shards for the selected classes
+                client_shard_indices = []
+                for label in client_labels:
+                    shard = shards[label].pop(0)  # Pop the first shard from the class's shard list
+                    client_shard_indices.append(shard)
+
+                # Flatten and combine the shard indices into one list
+                client_indices = [sample[0] for shard in client_shard_indices for sample in shard]
+                client_labels = [sample[1] for shard in client_shard_indices for sample in shard]
+
+                #print(f"Client {client_id} has {len(client_indices)} samples divided in {len(client_shard_indices)} shards (classes).")
+
+                # Create a Subset for the client
+                client_dataset = Subset(dataset, client_indices)
+                client_shards.append(client_dataset)
+
+            return client_shards  # Return the list of dataset subsets (shards) for each client
