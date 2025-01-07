@@ -129,7 +129,7 @@ The first results we report, are for Nc = 1, which means that each client has ap
 
 lr = 0.01 and wd = 0.01 after hyperparameter tuning experiments. 
 
-Accuracy reached on the validation set:  6.6%    
+Accuracy reached on the test set:  6.6%    
 
 Training and validation accuracy:  
 
@@ -146,7 +146,7 @@ Training and validation loss:
 lr = 0.001 and wd = 0.01 after hyperparameter tuning experiments.    
 
 
-Accuracy reached on the validation set: 4.26%    
+Accuracy reached on the test set: 4.26%    
 
 Training and validation accuracy:  
 
@@ -164,7 +164,7 @@ Training and validation loss:
 
 lr = 0.001 and wd = 0.001 after hyperparameter tuning experiments.  
 
-Accuracy reached on the validation set:  4.39%    
+Accuracy reached on the test set:  4.39%    
 
 Training and validation accuracy:   
 
@@ -180,7 +180,7 @@ Training and validation loss:
   
 lr = 0.01 and wd = 0.0001 after hyperparameter tuning experiments. 
 
-Accuracy reached on the validation set:  %    
+Accuracy reached on the test set:  %    
 
 Training and validation accuracy:  
 
@@ -197,25 +197,24 @@ Training and validation loss:
 lr = 0.01 and wd = 0.0001 after hyperparameter tuning experiments.    
 
 
-Accuracy reached on the validation set: %    
+Accuracy reached on the test set: 28.64%    
 
 Training and validation accuracy:  
 
-
-
+![alt text](images_report/image-25.png)
 
 
 Training and validation loss:  
 
 
-
+![alt text](images_report/image-26.png)
 
 
 **Nc=5, J=16, 500 rounds**  
 
 lr = 0.01 and wd = 0.0001 after hyperparameter tuning experiments.  
 
-Accuracy reached on the validation set:  24.54%    
+Accuracy reached on the test set:  24.54%    
 
 Training and validation accuracy:   
 
