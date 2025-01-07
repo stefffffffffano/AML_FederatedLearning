@@ -367,8 +367,8 @@ Clients receive an IID distribution of the data.
 
 ### \( J = 16 \), 500 Rounds  
 
-- **Learning Rate (lr):** _<value>_  
-- **Weight Decay (wd):** _<value>_  
+- **Learning Rate (lr):** _0.01_  
+- **Weight Decay (wd):** _0.0001_  
 
 **Test Set Performance**:  
 - **Accuracy:** _39.17 %_  
