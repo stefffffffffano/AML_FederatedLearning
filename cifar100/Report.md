@@ -126,11 +126,28 @@ The first results we report, are for Nc = 1, which means that each client has ap
 
 Accuracy reached on the validation set:  %  
 
-**Nc=1, J=8, 1000 rounds**  
+**Nc=1, J=8, 1000 rounds**    
 
-Accuracy reached on the validation set:  %  
+lr = 0.001 and wd = 0.01 after hyperparameter tuning experiments.    
+
+
+Accuracy reached on the validation set: 4.26%    
+
+Training and validation accuracy:  
+
+
+![alt text](image.png)
+
+
+Training and validation loss:  
+
+![alt text](image-1.png)  
+
+
 
 **Nc=1, J=16, 500 rounds**  
+
+lr = 0.001 and wd = 0.001 after hyperparameter tuning experiments.  
 
 Accuracy reached on the validation set:  4.39%    
 
