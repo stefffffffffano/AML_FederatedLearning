@@ -120,11 +120,25 @@ As we can see from the plot, the baseline without skewed participation is the on
 
 Fix K=100 and C=0.1, and simulate several non-iid shardings of the training set of CIFAR-100, by fixing the number of different labels clients have (Nc={1,5,10,50}). Then test the performance of FedAvg, comparing with the iid sharding, varying the number of local steps J={4,8,16}.   
 
-The first results we report, are for Nc = 1, which means that each client has approximately the same number of samples belonging to one class only.   
+The first results we report, are for Nc = 1, which means that each client has approximately the same number of samples belonging to one class only.    
 
-**Nc=1, J=4, 2000 rounds**  
+# Nc = 1
 
-Accuracy reached on the validation set:  %  
+**Nc=1, J=4, 2000 rounds**    
+
+lr = 0.01 and wd = 0.01 after hyperparameter tuning experiments. 
+
+Accuracy reached on the validation set:  6.6%    
+
+Training and validation accuracy:  
+
+![alt text](images_report/image-21.png)
+
+
+Training and validation loss:  
+
+![alt text](images_report/image-22.png)
+
 
 **Nc=1, J=8, 1000 rounds**    
 
@@ -136,12 +150,12 @@ Accuracy reached on the validation set: 4.26%
 Training and validation accuracy:  
 
 
-![alt text](image.png)
+![alt text](images_report/image-19.png)
 
 
 Training and validation loss:  
 
-![alt text](image-1.png)  
+![alt text](images_report/image-20.png)  
 
 
 
@@ -157,7 +171,57 @@ Training and validation accuracy:
 
 Training and validation loss:  
 
-![alt text](images_report/image-18.png)
+![alt text](images_report/image-18.png)  
+
+# Nc=5
+
+**Nc=5, J=4, 2000 rounds**    
+  
+lr = 0.01 and wd = 0.0001 after hyperparameter tuning experiments. 
+
+Accuracy reached on the validation set:  %    
+
+Training and validation accuracy:  
+
+
+
+
+Training and validation loss:  
+
+
+
+
+**Nc=5, J=8, 1000 rounds**    
+
+lr = 0.01 and wd = 0.0001 after hyperparameter tuning experiments.    
+
+
+Accuracy reached on the validation set: %    
+
+Training and validation accuracy:  
+
+
+
+
+
+Training and validation loss:  
+
+
+
+
+
+**Nc=5, J=16, 500 rounds**  
+
+lr = 0.01 and wd = 0.0001 after hyperparameter tuning experiments.  
+
+Accuracy reached on the validation set:  %    
+
+Training and validation accuracy:   
+
+
+
+Training and validation loss:  
+
 
 
 
