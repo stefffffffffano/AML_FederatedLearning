@@ -274,3 +274,10 @@ class Server:
                 client_shards.append(client_dataset)
 
             return client_shards  # Return the list of dataset subsets (shards) for each client
+        
+    def plot_sharding_data_distribution(self, trainloader, num_clients, num_classes):
+        shards = self.sharding(trainloader.dataset, num_clients, num_classes)
+        for client_id in range(num_clients):
+            client_dataset = shards[client_id]
+            #print(f"Client {client_id} has {len(client_dataset)} samples.")
+            plot_local_data_distribution(client_dataset,f"Nc{num_classes}", f"DataDistribution_client{client_id}.png")

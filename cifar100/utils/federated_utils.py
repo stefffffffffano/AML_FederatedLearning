@@ -31,6 +31,45 @@ def plot_client_selection(client_selection_count, file_name):
     plt.tight_layout()
     plt.savefig(file_path, format="png", dpi=300)
     plt.close()
+
+def plot_local_data_distribution(client_dataset, dir_name, file_name):
+    """
+    Plots the distribution of classes in a client's local dataset and saves the figure.
+
+    Args:
+        client_dataset: Dataset object containing (data, label) tuples.
+        file_name: Name of the file to save the plot.
+    """
+    # Fixed base directory
+    directory =  '../plots_federated/data_sharding_distributions/cifar100'+ '_' + dir_name
+    # Ensure the base directory exists
+    os.makedirs(directory, exist_ok=True)
+    # Complete path for the file
+    file_path = os.path.join(directory, file_name)
+
+    # Extract labels from the Subset dataset
+    base_dataset = client_dataset.dataset
+    indices = client_dataset.indices
+    labels = np.array([base_dataset[idx][1] for idx in indices])
+
+    # Count occurrences of each class
+    class_labels, frequencies = np.unique(labels, return_counts=True)
+
+    # Plot the histogram
+    plt.figure(figsize=(10, 6))
+    plt.bar(class_labels, frequencies, color='blue', edgecolor='black')
+    plt.title('Class Distribution in Local Dataset', fontsize=16)
+    plt.xlabel('Class', fontsize=14)
+    plt.ylabel('Frequency', fontsize=14)
+    plt.xticks(class_labels, rotation=45)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+    # Save the plot
+    plt.tight_layout()
+    plt.savefig(file_path)
+    plt.close()
+
+    print(f"Plot saved to {file_path}")
     
 def test(global_model, test_loader):
     """
