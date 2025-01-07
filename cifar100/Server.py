@@ -8,7 +8,6 @@ import os
 from torch.utils.data import DataLoader, Subset
 from utils.utils import evaluate
 from utils.checkpointing_utils import save_checkpoint, load_checkpoint
-import random
 import logging
 
 log = logging.getLogger(__name__)
