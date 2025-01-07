@@ -114,4 +114,34 @@ Accuracy reached on the test set after 2000 communication rounds: 29.02%
 As we can observe from the plot, the accuracy on the test set decreases with the value of gamma. Obviously, when only a small percentage of clients is selected, the model performs very well on the data of those clients, without being able of generalizing. Basically, the model overfits and, even if data are IID among clients, it doesn't train on sufficiently different examples when gamma is really low (e.g.: gamma = 0.05), but still it is able to perform reasonably good when gamma represents a more real situation (gamma = 1 or gamma = 0.5). The use of gamma = 0.05 was done on purpose to verify what happens in a very edge case, difficult to be produced in reality.   
 
 
-As we can see from the plot, the baseline without skewed participation is the one that performs better, followd, as previsioned in the introduction to the experiments, by the one with gamma = 5, which, as we can observe from client selection plots, isn't really unifor but almost. With higher values of gamma, we expect the model to perform as well as the baseline, while, with lower values of gamma, overfitting would make the test accuracy worst and worst.
+As we can see from the plot, the baseline without skewed participation is the one that performs better, followd, as previsioned in the introduction to the experiments, by the one with gamma = 5, which, as we can observe from client selection plots, isn't really unifor but almost. With higher values of gamma, we expect the model to perform as well as the baseline, while, with lower values of gamma, overfitting would make the test accuracy worst and worst.  
+
+# Simulate heterogeneous distributions
+
+Fix K=100 and C=0.1, and simulate several non-iid shardings of the training set of CIFAR-100, by fixing the number of different labels clients have (Nc={1,5,10,50}). Then test the performance of FedAvg, comparing with the iid sharding, varying the number of local steps J={4,8,16}.   
+
+The first results we report, are for Nc = 1, which means that each client has approximately the same number of samples belonging to one class only.   
+
+**Nc=1, J=4, 2000 rounds**  
+
+Accuracy reached on the validation set:  %  
+
+**Nc=1, J=8, 1000 rounds**  
+
+Accuracy reached on the validation set:  %  
+
+**Nc=1, J=16, 500 rounds**  
+
+Accuracy reached on the validation set:  4.39%    
+
+Training and validation accuracy:   
+
+![alt text](images_report/image-17.png)
+
+Training and validation loss:  
+
+![alt text](images_report/image-18.png)
+
+
+
+
