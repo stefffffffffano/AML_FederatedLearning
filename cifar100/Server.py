@@ -226,56 +226,49 @@ class Server:
             return shards
 
         else:  # non-IID Case
-            # Get labels for sorting
-            images = np.array([dataset[i][0] for i in range(len(dataset))])  # Assuming each sample is a tuple (data, label)
-            labels = np.array([dataset[i][1] for i in range(len(dataset))]) 
-            TOTAL_NUM_CLASSES = len(set(labels))
+            # Extract labels from the dataset (assuming each sample is a tuple (data, label))
+            labels = np.array([dataset[i][1] for i in range(len(dataset))])
+            TOTAL_NUM_CLASSES = len(set(labels))  # Determine the total number of unique classes in the dataset
 
-            shard_size = len(dataset) // (number_of_clients * number_of_classes)  # Shard size for each class per client
-            print("dataset len: ", len(dataset), ", shard size: ", shard_size, ", number of shards: ",(number_of_clients * number_of_classes))
+            # Calculate the shard size for each class per client
+            shard_size = len(dataset) // (number_of_clients * number_of_classes)
             if shard_size == 0:
-                raise ValueError("Shard size is too small; increase dataset size or reduce number of clients/classes.")
+                # If the shard size is too small to be meaningful, raise an error
+                raise ValueError("Shard size is too small; adjust dataset size or number of clients/classes.")
 
-
-            # Divide the dataset into shards, each containing samples from one class
-            shards = {}
-            for i in range(TOTAL_NUM_CLASSES):  
-                # Filter samples for the current class
-                class_samples = [(images[j], labels[j]) for j in range(len(labels)) if labels[j] == i]
-                shards_of_class_i = []
-                # While there are enough samples to form a shard
+            # Build class-based shards
+            shards = {}  # Dictionary to store shards for each class
+            for i in range(TOTAL_NUM_CLASSES):
+                # Collect indices of samples belonging to the current class
+                class_samples = [j for j in range(len(labels)) if labels[j] == i]
+                shards_of_class_i = []  # List to store shards for this specific class
                 while len(class_samples) >= shard_size:
-                    # Take a shard of shard_size samples
+                    # Divide the samples into shards of size `shard_size`
                     shards_of_class_i.append(class_samples[:shard_size])
-                    # Remove the shard_size samples from class_samples
-                    class_samples = class_samples[shard_size:]
-                # Add the last shard (which might be smaller than shard_size)
+                    class_samples = class_samples[shard_size:]  # Remove used samples
                 if class_samples:
+                    # Add the remaining samples as the last shard (may be smaller than `shard_size`)
                     shards_of_class_i.append(class_samples)
-                # Store the class shards
-                shards[i] = shards_of_class_i  # Store shards by class
-      
-            client_shards = []  # List to store the dataset for each client
-                        
+                shards[i] = shards_of_class_i  # Store the shards for the current class
+
+            client_shards = []  # List to store the dataset subsets for each client
             for client_id in range(number_of_clients):
-                
-                client_labels = [label % TOTAL_NUM_CLASSES for label in range(client_id * number_of_classes, client_id * number_of_classes + number_of_classes)]
+                # Determine the class labels assigned to the current client
+                client_labels = [
+                    label % TOTAL_NUM_CLASSES for label in range(client_id * number_of_classes, client_id * number_of_classes + number_of_classes)
+                ]
 
-                #print(client_labels)
-
-                # Collect the shards for the selected classes
-                client_shard_indices = []
+                client_shard_indices = []  # List to store the shards for the client's assigned classes
                 for label in client_labels:
-                    shard = shards[label].pop(0)  # Pop the first shard from the class's shard list
+                    # Pop the first available shard for the current class and assign it to the client
+                    shard = shards[label].pop(0)
                     client_shard_indices.append(shard)
 
-                # Flatten and combine the shard indices into one list
-                client_indices = [sample[0] for shard in client_shard_indices for sample in shard]
-
-                #print(f"Client {client_id} has {len(client_indices)} samples divided in {len(client_shard_indices)} shards (classes).")
-
-                # Create a Subset for the client
+                # Flatten all the shard indices into a single list for the client
+                client_indices = [idx for shard in client_shard_indices for idx in shard]
+                # Create a subset of the dataset containing only the selected indices
                 client_dataset = Subset(dataset, client_indices)
-                client_shards.append(client_dataset)
+                client_shards.append(client_dataset)  # Add the client's subset to the result list
 
-            return client_shards  # Return the list of dataset subsets (shards) for each client
+            # Return the list of subsets (shards) for all clients
+            return client_shards
