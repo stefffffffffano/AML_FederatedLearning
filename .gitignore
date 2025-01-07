@@ -15,10 +15,6 @@ env/
 .DS_Store
 Thumbs.db
 
-# PyTorch model files
-*.pth
-*.pt
-
 # Logs and temporary files
 *.log
 *.tmp
