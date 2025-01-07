@@ -257,7 +257,7 @@ class Server:
             for client_id in range(number_of_clients):
                 
                 client_labels = [label % TOTAL_NUM_CLASSES for label in range(client_id, client_id + number_of_classes)]
-                print(client_labels)
+                #print(client_labels)
 
                 # Collect the shards for the selected classes
                 client_shard_indices = []
@@ -268,7 +268,7 @@ class Server:
                 # Flatten and combine the shard indices into one list
                 client_indices = [idx for shard in client_shard_indices for idx in shard]
 
-                print(f"Client {client_id} has {len(client_indices)} samples divided in {len(client_shard_indices)} shards (classes).")
+                #print(f"Client {client_id} has {len(client_indices)} samples divided in {len(client_shard_indices)} shards (classes).")
                 # Create a Subset for the client
                 client_dataset = Subset(dataset, client_indices)
                 client_shards.append(client_dataset)
