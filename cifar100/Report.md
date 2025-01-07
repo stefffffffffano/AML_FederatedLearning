@@ -241,9 +241,8 @@ Each client has approximately the same number of samples belonging to one class 
 - **Learning Rate (lr):** _<value>_  
 - **Weight Decay (wd):** _<value>_  
 
-**Validation Set Performance**:  
+**Test Set Performance**:  
 - **Accuracy:** _<value>_  
-- **Loss:** _<value>_
 
 #### Training and Validation Accuracy  
 ![Training and Validation Accuracy](<image_name>)
@@ -258,9 +257,8 @@ Each client has approximately the same number of samples belonging to one class 
 - **Learning Rate (lr):** _0.001_  
 - **Weight Decay (wd):** _0.01_  
 
-**Validation Set Performance**:  
+**Test Set Performance**:  
 - **Accuracy:** _4.26%_  
-- **Loss:** _<value>_
 
 #### Training and Validation Accuracy  
 ![Training and Validation Accuracy](image.png)
@@ -275,9 +273,8 @@ Each client has approximately the same number of samples belonging to one class 
 - **Learning Rate (lr):** _0.001_  
 - **Weight Decay (wd):** _0.001_  
 
-**Validation Set Performance**:  
+**Test Set Performance**:  
 - **Accuracy:** _4.39%_  
-- **Loss:** _<value>_
 
 #### Training and Validation Accuracy  
 ![Training and Validation Accuracy](images_report/image-17.png)
@@ -296,9 +293,8 @@ Each client has approximately the same number of samples belonging to five class
 - **Learning Rate (lr):** _<value>_  
 - **Weight Decay (wd):** _<value>_  
 
-**Validation Set Performance**:  
+**Test Set Performance**:  
 - **Accuracy:** _<value>_  
-- **Loss:** _<value>_
 
 #### Training and Validation Accuracy  
 ![Training and Validation Accuracy](<image_name>)
@@ -313,9 +309,8 @@ Each client has approximately the same number of samples belonging to five class
 - **Learning Rate (lr):** _<value>_  
 - **Weight Decay (wd):** _<value>_  
 
-**Validation Set Performance**:  
+**Test Set Performance**:  
 - **Accuracy:** _<value>_  
-- **Loss:** _<value>_
 
 #### Training and Validation Accuracy  
 ![Training and Validation Accuracy](<image_name>)
@@ -330,9 +325,8 @@ Each client has approximately the same number of samples belonging to five class
 - **Learning Rate (lr):** _<value>_  
 - **Weight Decay (wd):** _<value>_  
 
-**Validation Set Performance**:  
+**Test Set Performance**:  
 - **Accuracy:** _<value>_  
-- **Loss:** _<value>_
 
 #### Training and Validation Accuracy  
 ![Training and Validation Accuracy](<image_name>)
@@ -351,9 +345,8 @@ Each client has approximately the same number of samples belonging to ten classe
 - **Learning Rate (lr):** _<value>_  
 - **Weight Decay (wd):** _<value>_  
 
-**Validation Set Performance**:  
+**Test Set Performance**:  
 - **Accuracy:** _<value>_  
-- **Loss:** _<value>_
 
 #### Training and Validation Accuracy  
 ![Training and Validation Accuracy](<image_name>)
@@ -368,9 +361,8 @@ Each client has approximately the same number of samples belonging to ten classe
 - **Learning Rate (lr):** _<value>_  
 - **Weight Decay (wd):** _<value>_  
 
-**Validation Set Performance**:  
+**Test Set Performance**:  
 - **Accuracy:** _<value>_  
-- **Loss:** _<value>_
 
 #### Training and Validation Accuracy  
 ![Training and Validation Accuracy](<image_name>)
@@ -385,9 +377,8 @@ Each client has approximately the same number of samples belonging to ten classe
 - **Learning Rate (lr):** _<value>_  
 - **Weight Decay (wd):** _<value>_  
 
-**Validation Set Performance**:  
+**Test Set Performance**:  
 - **Accuracy:** _<value>_  
-- **Loss:** _<value>_
 
 #### Training and Validation Accuracy  
 ![Training and Validation Accuracy](<image_name>)
@@ -398,56 +389,53 @@ Each client has approximately the same number of samples belonging to ten classe
 
 ## Results for \( N_c = 50 \)
 
-Each client has approximately the same number of samples belonging to fifty classes.
+Each client has the same number of samples belonging to fifty classes.
 
 ### \( J = 4 \), 2000 Rounds  
 
-- **Learning Rate (lr):** _<value>_  
-- **Weight Decay (wd):** _<value>_  
+- **Learning Rate (lr):** _0.1_  
+- **Weight Decay (wd):** _0.001_  
 
-**Validation Set Performance**:  
-- **Accuracy:** _<value>_  
-- **Loss:** _<value>_
+**Test Set Performance**:  
+- **Accuracy:** _45.53 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<image_name>)
+![Training and Validation Accuracy](<images_report/Federated_num_classes_50_local_steps_4_LR_0.1_WD_0.0001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<image_name>)
+![Training and Validation Loss](<images_report/Federated_num_classes_50_local_steps_4_LR_0.1_WD_0.0001_loss.png>)
 
 ---
 
 ### \( J = 8 \), 1000 Rounds  
 
-- **Learning Rate (lr):** _<value>_  
-- **Weight Decay (wd):** _<value>_  
+- **Learning Rate (lr):** _0.1_  
+- **Weight Decay (wd):** _0.001_  
 
-**Validation Set Performance**:  
-- **Accuracy:** _<value>_  
-- **Loss:** _<value>_
+**Test Set Performance**:  
+- **Accuracy:** _42.11 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<image_name>)
+![Training and Validation Accuracy](<images_report/Federated_num_classes_50_local_steps_8_LR_0.1_WD_0.001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<image_name>)
+![Training and Validation Loss](<images_report/Federated_num_classes_50_local_steps_8_LR_0.1_WD_0.001_loss>)
 
 ---
 
 ### \( J = 16 \), 500 Rounds  
 
-- **Learning Rate (lr):** _<value>_  
-- **Weight Decay (wd):** _<value>_  
+- **Learning Rate (lr):** _0.01_  
+- **Weight Decay (wd):** _0.0001_  
 
-**Validation Set Performance**:  
-- **Accuracy:** _<value>_  
-- **Loss:** _<value>_
+**Test Set Performance**:  
+- **Accuracy:** _38.49 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<image_name>)
+![Training and Validation Accuracy](<images_report/Federated_num_classes_50_local_steps_16_LR_0.01_WD_0.0001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<image_name>)
+![Training and Validation Loss](<images_report/Federated_num_classes_50_local_steps_16_LR_0.01_WD_0.0001_loss.png>)
 
 ---
 
@@ -457,35 +445,33 @@ Clients receive an IID distribution of the data.
 
 ### \( J = 4 \), 2000 Rounds  
 
-- **Learning Rate (lr):** _<value>_  
-- **Weight Decay (wd):** _<value>_  
+- **Learning Rate (lr):** _0.1_  
+- **Weight Decay (wd):** _0.001_  
 
-**Validation Set Performance**:  
-- **Accuracy:** _<value>_  
-- **Loss:** _<value>_
+**Test Set Performance**:  
+- **Accuracy:** _47.81 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<image_name>)
+![Training and Validation Accuracy](<images_report/image-2.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<image_name>)
+![Training and Validation Loss](<images_report/image-3.png>)
 
 ---
 
 ### \( J = 8 \), 1000 Rounds  
 
-- **Learning Rate (lr):** _<value>_  
-- **Weight Decay (wd):** _<value>_  
+- **Learning Rate (lr):** _0.1_  
+- **Weight Decay (wd):** _0.0001_  
 
-**Validation Set Performance**:  
-- **Accuracy:** _<value>_  
-- **Loss:** _<value>_
+**Test Set Performance**:  
+- **Accuracy:** _42.38 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<image_name>)
+![Training and Validation Accuracy](<images_report/Federated_num_classes_100_local_steps_8_LR_0.1_WD_0.0001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<image_name>)
+![Training and Validation Loss](<images_report/Federated_num_classes_100_local_steps_8_LR_0.1_WD_0.0001_loss.png>)
 
 ---
 
@@ -494,12 +480,11 @@ Clients receive an IID distribution of the data.
 - **Learning Rate (lr):** _<value>_  
 - **Weight Decay (wd):** _<value>_  
 
-**Validation Set Performance**:  
-- **Accuracy:** _<value>_  
-- **Loss:** _<value>_
+**Test Set Performance**:  
+- **Accuracy:** _39.17 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<image_name>)
+![Training and Validation Accuracy](<images_report/Federated_num_classes_100_local_steps_16_LR_0.01_WD_0.0001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<image_name>)
+![Training and Validation Loss](<images_report/Federated_num_classes_100_local_steps_16_LR_0.01_WD_0.0001_loss.png>)
