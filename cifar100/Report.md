@@ -180,16 +180,16 @@ Training and validation loss:
   
 lr = 0.01 and wd = 0.0001 after hyperparameter tuning experiments. 
 
-Accuracy reached on the test set:  %    
+Accuracy reached on the test set:  28.46%    
 
 Training and validation accuracy:  
 
-
+![alt text](images_report/image-27.png)
 
 
 Training and validation loss:  
 
-
+![alt text](images_report/image-28.png)
 
 
 **Nc=5, J=8, 1000 rounds**    
