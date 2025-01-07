@@ -194,7 +194,7 @@ class Server:
 
 
 
-    def sharding(self, dataset, number_of_clients, number_of_classes=100, balanced_dataset=True):
+    def sharding(self, dataset, number_of_clients, number_of_classes=100):
         """
         Function that performs the sharding of the dataset given as input.
         dataset: dataset to be split (should be a PyTorch dataset or similar);
@@ -256,29 +256,11 @@ class Server:
                 shards[i] = shards_of_class_i  # Store shards by class
       
             client_shards = []  # List to store the dataset for each client
-            available_classes = list(shards.keys())  # List of available classes (0-99)
-            
+                        
             for client_id in range(number_of_clients):
                 
-                client_labels=[]
-              
-                if balanced_dataset:
-                  client_labels = [label % TOTAL_NUM_CLASSES for label in range(client_id * number_of_classes, client_id * number_of_classes + number_of_classes)]
-                else:
-                  # Filter classes that have at least one available shard
-                  classes_with_shards = [label for label in available_classes if len(shards[label])>0] 
+                client_labels = [label % TOTAL_NUM_CLASSES for label in range(client_id * number_of_classes, client_id * number_of_classes + number_of_classes)]
 
-                  # Check if we do not have enough classes with available shards 
-                  if len(classes_with_shards) < number_of_classes:
-                      log.warning(f"Not enough classes with available shards for client {client_id}. Required: {number_of_classes}, Available: {len(classes_with_shards)}.")
-                      # Handle the case when there aren't enough available classes
-                      # Reduce number_of_classes for this client (and proceed with fewer classes)
-                      number_of_classes = len(classes_with_shards)  # Use the remaining classes if we cannot satisfy number_of_classes
-                      client_labels = classes_with_shards  # Take all the remaining classes for this client
-                  else: 
-                      # Randomly select number_of_classes classes with available shards
-                      client_labels = random.sample(classes_with_shards, number_of_classes)
-              
                 #print(client_labels)
 
                 # Collect the shards for the selected classes
@@ -289,7 +271,6 @@ class Server:
 
                 # Flatten and combine the shard indices into one list
                 client_indices = [sample[0] for shard in client_shard_indices for sample in shard]
-                client_labels = [sample[1] for shard in client_shard_indices for sample in shard]
 
                 #print(f"Client {client_id} has {len(client_indices)} samples divided in {len(client_shard_indices)} shards (classes).")
 
