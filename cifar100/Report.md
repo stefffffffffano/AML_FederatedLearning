@@ -232,49 +232,49 @@ Each client has approximately the same number of samples belonging to ten classe
 
 ### \( J = 4 \), 2000 Rounds  
 
-- **Learning Rate (lr):** _<value>_  
-- **Weight Decay (wd):** _<value>_  
+- **Learning Rate (lr):** _0.1_  
+- **Weight Decay (wd):** _0.001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _<value>_  
+- **Accuracy:** _43.72 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<image_name>)
+![Training and Validation Accuracy](<images_report/Federated_num_classes_10_local_steps_4_LR_0.1_WD_0.001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<image_name>)
+![Training and Validation Loss](<images_report/Federated_num_classes_10_local_steps_4_LR_0.1_WD_0.001_loss.png>)
 
 ---
 
 ### \( J = 8 \), 1000 Rounds  
 
-- **Learning Rate (lr):** _<value>_  
-- **Weight Decay (wd):** _<value>_  
+- **Learning Rate (lr):** _0.01_  
+- **Weight Decay (wd):** _0.0001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _<value>_  
+- **Accuracy:** _31.51 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<image_name>)
+![Training and Validation Accuracy](<images_report/Federated_num_classes_10_local_steps_8_LR_0.01_WD_0.0001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<image_name>)
+![Training and Validation Loss](<images_report/Federated_num_classes_10_local_steps_8_LR_0.01_WD_0.0001_loss.png>)
 
 ---
 
 ### \( J = 16 \), 500 Rounds  
 
-- **Learning Rate (lr):** _<value>_  
-- **Weight Decay (wd):** _<value>_  
+- **Learning Rate (lr):** _0.01_  
+- **Weight Decay (wd):** _0.001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _<value>_  
+- **Accuracy:** _28.16 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<image_name>)
+![Training and Validation Accuracy](<images_report/Federated_num_classes_10_local_steps_16_LR_0.01_WD_0.001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<image_name>)
+![Training and Validation Loss](<images_report/Federated_num_classes_10_local_steps_16_LR_0.01_WD_0.001_loss.png>)
 
 
 ## Results for \( N_c = 50 \)
