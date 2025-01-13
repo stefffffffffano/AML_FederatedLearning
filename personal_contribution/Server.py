@@ -71,7 +71,7 @@ class Server:
     #1. receive the n clients to perform one round
     #2. averages the results coming from the model of the n clients
     #3. returns the model and the results averaged.
-    def train_federated(self, criterion, trainloader, validloader, num_clients, num_classes, rounds, lr, momentum, batchsize, wd, selected_clients, shards, C=0.1, local_steps=4, log_freq=10, detailed_print=False,gamma=None):
+    def train_federated(self, criterion, lr, momentum, batchsize, wd, selected_clients, shards, local_steps=4):
         
         train_accuracies = []
         train_losses = []
