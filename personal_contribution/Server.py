@@ -88,47 +88,45 @@ class Server:
         
         rounds = 1
         # we only mantain a round
-        for round_num in range(rounds):
-            
-            # 1) client selection: In each round, a fraction C (e.g., 10%) of clients is randomly selected to participate.
-            #     This reduces computation costs and mimics real-world scenarios where not all devices are active.
-            #selected_clients = self.client_selection(num_clients, C,probabilities)
-            client_states = []
-            client_avg_losses = []
-            client_avg_accuracies = []
-            # for client_id in selected_clients:
-            #     client_selection_count[client_id] += 1
+        # 1) client selection: In each round, a fraction C (e.g., 10%) of clients is randomly selected to participate.
+        #     This reduces computation costs and mimics real-world scenarios where not all devices are active.
+        #selected_clients = self.client_selection(num_clients, C,probabilities)
+        client_states = []
+        client_avg_losses = []
+        client_avg_accuracies = []
+        # for client_id in selected_clients:
+        #     client_selection_count[client_id] += 1
 
-            # 2) local training: for each client updates the model using the client's data for local_steps epochs
-            for client_id in selected_clients:
-                local_model = deepcopy(self.global_model) #it creates a local copy of the global model
-                optimizer = optim.SGD(local_model.parameters(), lr=lr, momentum=momentum, weight_decay=wd) #same of the centralized version
-                client_loader = DataLoader(shards[client_id], batch_size=batchsize, shuffle=True)
+        # 2) local training: for each client updates the model using the client's data for local_steps epochs
+        for client_id in selected_clients:
+            local_model = deepcopy(self.global_model) #it creates a local copy of the global model
+            optimizer = optim.SGD(local_model.parameters(), lr=lr, momentum=momentum, weight_decay=wd) #same of the centralized version
+            client_loader = DataLoader(shards[client_id], batch_size=batchsize, shuffle=True)
 
-                #print_log =  (round_num+1) % log_freq == 0 and detailed_print
-                client = Client(client_id, client_loader, local_model, self.device)
-                client_local_state, client_avg_loss, client_avg_accuracy  = client.client_update(client_loader, criterion, optimizer, local_steps)
+            #print_log =  (round_num+1) % log_freq == 0 and detailed_print
+            client = Client(client_id, client_loader, local_model, self.device)
+            client_local_state, client_avg_loss, client_avg_accuracy  = client.client_update(client_loader, criterion, optimizer, local_steps)
 
-                client_states.append(client_local_state)
-                client_avg_losses.append(client_avg_loss)
-                client_avg_accuracies.append(client_avg_accuracy)
+            client_states.append(client_local_state)
+            client_avg_losses.append(client_avg_loss)
+            client_avg_accuracies.append(client_avg_accuracy)
 
 
-            # 3) central aggregation: aggregates participating client updates using fedavg_aggregate
-            #    and replaces the current parameters of global_model with the returned ones.
-            aggregated_state, train_loss, train_accuracy = self.fedavg_aggregate(client_states, [client_sizes[i] for i in selected_clients], client_avg_losses, client_avg_accuracies)
+        # 3) central aggregation: aggregates participating client updates using fedavg_aggregate
+        #    and replaces the current parameters of global_model with the returned ones.
+        aggregated_state, train_loss, train_accuracy = self.fedavg_aggregate(client_states, [client_sizes[i] for i in selected_clients], client_avg_losses, client_avg_accuracies)
         
-            self.global_model.load_state_dict(aggregated_state)
+        self.global_model.load_state_dict(aggregated_state)
 
-            train_accuracies.append(train_accuracy)
-            train_losses.append(train_loss)
-            #Validation at the server
-            val_accuracy, val_loss = evaluate(self.global_model, validloader)
-            val_accuracies.append(val_accuracy)
-            val_losses.append(val_loss)
-            if val_accuracy > best_val_acc:
-                best_val_acc = val_accuracy
-                best_model_state = deepcopy(self.global_model.state_dict())
+        train_accuracies.append(train_accuracy)
+        train_losses.append(train_loss)
+        #Validation at the server
+        val_accuracy, val_loss = evaluate(self.global_model, validloader)
+        val_accuracies.append(val_accuracy)
+        val_losses.append(val_loss)
+        if val_accuracy > best_val_acc:
+            best_val_acc = val_accuracy
+            best_model_state = deepcopy(self.global_model.state_dict())
 
         
 
