@@ -76,26 +76,16 @@ class Server:
         val_losses = []
         train_accuracies = []
         train_losses = []
-        best_model_state = None  # The model with the best accuracy
-        client_selection_count = [0] * num_clients #Count how many times a client has been selected
-        best_val_acc = 0.0
-
+        
         #shards = self.sharding(trainloader.dataset, num_clients, num_classes) #each shard represent the training data for one client
         client_sizes = [len(shard) for shard in shards]
 
         self.global_model.to(self.device) #as alwayse, we move the global model to the specified device (CPU or GPU)
 
-        
-        rounds = 1
         # we only mantain a round
-        # 1) client selection: In each round, a fraction C (e.g., 10%) of clients is randomly selected to participate.
-        #     This reduces computation costs and mimics real-world scenarios where not all devices are active.
-        #selected_clients = self.client_selection(num_clients, C,probabilities)
         client_states = []
         client_avg_losses = []
         client_avg_accuracies = []
-        # for client_id in selected_clients:
-        #     client_selection_count[client_id] += 1
 
         # 2) local training: for each client updates the model using the client's data for local_steps epochs
         for client_id in selected_clients:
@@ -103,7 +93,6 @@ class Server:
             optimizer = optim.SGD(local_model.parameters(), lr=lr, momentum=momentum, weight_decay=wd) #same of the centralized version
             client_loader = DataLoader(shards[client_id], batch_size=batchsize, shuffle=True)
 
-            #print_log =  (round_num+1) % log_freq == 0 and detailed_print
             client = Client(client_id, client_loader, local_model, self.device)
             client_local_state, client_avg_loss, client_avg_accuracy  = client.client_update(client_loader, criterion, optimizer, local_steps)
 
@@ -124,13 +113,8 @@ class Server:
         val_accuracy, val_loss = evaluate(self.global_model, validloader)
         val_accuracies.append(val_accuracy)
         val_losses.append(val_loss)
-        if val_accuracy > best_val_acc:
-            best_val_acc = val_accuracy
-            best_model_state = deepcopy(self.global_model.state_dict())
 
-        
-
-        return self.global_model, val_accuracies, val_losses, train_accuracies, train_losses, client_selection_count
+        return self.global_model, val_accuracies, val_losses, train_accuracies, train_losses
 
     def skewed_probabilities(self, number_of_clients, gamma=0.5):
             # Generate skewed probabilities using a Dirichlet distribution
