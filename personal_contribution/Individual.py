@@ -1,7 +1,5 @@
 import random
 
-#usage: parent1 = Individual(genome=random.sample(range(total_clients), k=num_selected_clients))
-
 
 class Individual:
     def __init__(self, genome, total_clients=100,number_selected_clients = 2):
