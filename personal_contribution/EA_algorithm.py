@@ -69,8 +69,6 @@ def EA_algorithm(generations,population_size,num_clients,crossover_probability):
 
         # Replace the population with the new offspring
         population = offspring 
-        for individual in population:
-            print(individual.genome)
             
 
             
