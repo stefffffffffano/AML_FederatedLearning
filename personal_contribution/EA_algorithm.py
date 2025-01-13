@@ -64,11 +64,13 @@ def EA_algorithm(generations,population_size,num_clients,crossover_probability):
                 offspring.append(Individual.crossover(parent1, parent2))
             else:
                 parent = tournament_selection(population)
-                offspring.append(parent.point_mutation())
+                parent.point_mutation()
+                offspring.append(parent)
 
         # Replace the population with the new offspring
         population = offspring 
-
+        for individual in population:
+            print(individual.genome)
             
 
             

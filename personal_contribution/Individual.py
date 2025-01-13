@@ -30,14 +30,14 @@ class Individual:
         """
         num_changes = 1  # Number of mutations
         available_clients = set(range(self.total_clients)) - set(self.genome)  # Clients not in genome
-
+    
         # Remove random clients from the genome
         to_remove = random.sample(self.genome, k=num_changes)
         for client in to_remove:
             self.genome.remove(client)
 
         # Add new random clients from the available set
-        to_add = random.sample(available_clients, k=num_changes)
+        to_add = random.sample(list(available_clients), k=num_changes)
         self.genome.extend(to_add)
 
     @staticmethod
