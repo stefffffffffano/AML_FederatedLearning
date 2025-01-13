@@ -4,7 +4,7 @@ import random
 
 
 class Individual:
-    def __init__(self, genome, total_clients=100,number_selected_clients = 10):
+    def __init__(self, genome, total_clients=100,number_selected_clients = 2):
         """
         Initialize an Individual.
 
@@ -25,12 +25,12 @@ class Individual:
         """
         self.fitness = fitness_value
 
-    def mutate(self):
+    def point_mutation(self):
         """
-        Mutate the genome by changing 2 to 4 clients randomly.
+        Mutate the genome by changing 1 client randomly.
         Ensures that the selected clients remain disjoint.
         """
-        num_changes = random.randint(2, 4)  # Number of mutations
+        num_changes = 1  # Number of mutations
         available_clients = set(range(self.total_clients)) - set(self.genome)  # Clients not in genome
 
         # Remove random clients from the genome
