@@ -72,8 +72,7 @@ class Server:
     #2. averages the results coming from the model of the n clients
     #3. returns the model and the results averaged.
     def train_federated(self, criterion, trainloader, validloader, num_clients, num_classes, rounds, lr, momentum, batchsize, wd, selected_clients, shards, C=0.1, local_steps=4, log_freq=10, detailed_print=False,gamma=None):
-        val_accuracies = []
-        val_losses = []
+        
         train_accuracies = []
         train_losses = []
         
@@ -109,12 +108,9 @@ class Server:
 
         train_accuracies.append(train_accuracy)
         train_losses.append(train_loss)
-        #Validation at the server
-        val_accuracy, val_loss = evaluate(self.global_model, validloader)
-        val_accuracies.append(val_accuracy)
-        val_losses.append(val_loss)
+        
 
-        return self.global_model, val_accuracies, val_losses, train_accuracies, train_losses
+        return self.global_model, train_accuracies, train_losses
 
     def skewed_probabilities(self, number_of_clients, gamma=0.5):
             # Generate skewed probabilities using a Dirichlet distribution
