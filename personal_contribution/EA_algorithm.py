@@ -17,7 +17,7 @@ def tournament_selection(population, tau=2):
     return deepcopy(winner)
 
 
-def EA_algorithm(generations,population_size,num_clients,mutation_probability,crossover_probability):
+def EA_algorithm(generations,population_size,num_clients,crossover_probability):
     """
     Perform the Evolutionary Algorithm (EA) to optimize the selection of clients.
     The EA consists of the following steps:
@@ -30,7 +30,6 @@ def EA_algorithm(generations,population_size,num_clients,mutation_probability,cr
     :param generations: Number of generations to run the algorithm.
     :param population_size: Number of individuals in the population.
     :param num_clients: clients selected by each individual.
-    :param mutation_probability: Probability of mutation for each individual.
     :param crossover_probability: Probability of crossover for each individual.
 
     :return global_model: The global model obtained after the EA.
