@@ -43,6 +43,7 @@ class Client:
         total_samples = 0
         while step_count < local_steps:
             for data, targets in client_data:
+                
                 # Move data and targets to the specified device (e.g., GPU or CPU)
                 data, targets = data.to(self.device), targets.to(self.device)
 

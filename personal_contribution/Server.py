@@ -3,12 +3,12 @@ import torch.optim as optim
 from copy import deepcopy
 import numpy as np
 from torch.utils.data import Subset
-from Client import Client
 import os
 from torch.utils.data import DataLoader, Subset
-from utils.utils import evaluate
-from utils.checkpointing_utils import save_checkpoint, load_checkpoint
+#from utils.utils import evaluate
+#from utils.checkpointing_utils import save_checkpoint, load_checkpoint
 import logging
+from Client import Client
 
 log = logging.getLogger(__name__)
 
@@ -72,6 +72,7 @@ class Server:
     #2. averages the results coming from the model of the n clients
     #3. returns the model and the results averaged.
     def train_federated(self, criterion, lr, momentum, batchsize, wd, selected_clients, shards, local_steps=4):
+      # selected_clients are objects of Individual class
         
         train_accuracies = []
         train_losses = []
@@ -87,7 +88,7 @@ class Server:
         client_avg_accuracies = []
 
         # 2) local training: for each client updates the model using the client's data for local_steps epochs
-        for client_id in selected_clients:
+        for client_id in selected_clients.genome:
             local_model = deepcopy(self.global_model) #it creates a local copy of the global model
             optimizer = optim.SGD(local_model.parameters(), lr=lr, momentum=momentum, weight_decay=wd) #same of the centralized version
             client_loader = DataLoader(shards[client_id], batch_size=batchsize, shuffle=True)
@@ -102,15 +103,17 @@ class Server:
 
         # 3) central aggregation: aggregates participating client updates using fedavg_aggregate
         #    and replaces the current parameters of global_model with the returned ones.
-        aggregated_state, train_loss, train_accuracy = self.fedavg_aggregate(client_states, [client_sizes[i] for i in selected_clients], client_avg_losses, client_avg_accuracies)
-        
+        aggregated_state, train_loss, train_accuracy = self.fedavg_aggregate(client_states, [client_sizes[i] for i in selected_clients.genome], client_avg_losses, client_avg_accuracies)
+        # UPDATE THE FITNESS OF INDIVIDUAL:
+        selected_clients.fitness = train_accuracy
+
         self.global_model.load_state_dict(aggregated_state)
 
         train_accuracies.append(train_accuracy)
         train_losses.append(train_loss)
         
 
-        return self.global_model, train_accuracies, train_losses
+        return self.global_model.state_dict(), train_accuracy, train_loss
 
     def skewed_probabilities(self, number_of_clients, gamma=0.5):
             # Generate skewed probabilities using a Dirichlet distribution
@@ -224,9 +227,4 @@ class Server:
 
             return client_shards  # Return the list of dataset subsets (shards) for each client
         
-    def plot_sharding_data_distribution(self, trainloader, num_clients, num_classes):
-        shards = self.sharding(trainloader.dataset, num_clients, num_classes)
-        for client_id in range(num_clients):
-            client_dataset = shards[client_id]
-            #print(f"Client {client_id} has {len(client_dataset)} samples.")
-            plot_local_data_distribution(client_dataset,f"Nc{num_classes}", f"DataDistribution_client{client_id}.png")
+    
