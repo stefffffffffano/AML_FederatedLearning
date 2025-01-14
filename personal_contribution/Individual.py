@@ -1,8 +1,5 @@
-import random
-
-
 class Individual:
-    def __init__(self, genome, total_clients=100,number_selected_clients = 2):
+    def __init__(self, genome, total_clients=100, number_selected_clients=2):
         """
         Initialize an Individual.
 
@@ -14,7 +11,7 @@ class Individual:
         self.fitness = None  # Fitness will be computed separately
         self.total_clients = total_clients
         self.number_selected_clients = number_selected_clients
-    
+
     def set_fitness(self, fitness_value):
         """
         Set the fitness value for the individual.
@@ -60,8 +57,32 @@ class Individual:
         # Combine to form new genome
         new_genome = genome1_part + genome2_part[:len(parent1.genome) - half_size]
 
-        #Ensure that the genome is long enough
-        if(len(new_genome)< parent1.number_selected_clients):
+        # Ensure that the genome is long enough
+        if len(new_genome) < parent1.number_selected_clients:
             new_genome = new_genome + random.sample(range(parent1.total_clients), k=parent1.number_selected_clients - len(new_genome))
 
         return Individual(genome=new_genome, total_clients=parent1.total_clients)
+
+    def to_dict(self):
+        """
+        Convert the Individual object to a dictionary for JSON serialization.
+        """
+        return {
+            'genome': self.genome,
+            'fitness': self.fitness,
+            'total_clients': self.total_clients,
+            'number_selected_clients': self.number_selected_clients
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Create an Individual object from a dictionary.
+        """
+        individual = cls(
+            genome=data['genome'],
+            total_clients=data['total_clients'],
+            number_selected_clients=data['number_selected_clients']
+        )
+        individual.fitness = data.get('fitness')
+        return individual
