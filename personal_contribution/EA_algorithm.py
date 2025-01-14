@@ -137,8 +137,6 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
         val_accuracies.append(acc)
         val_losses.append(loss)
 
-        print(f"Generation {gen+1}, accuracy {acc}, loss {loss}")
-
         offspring = []
         #Offspring-> offspring size is the same as population size
         for j in range(population_size):
@@ -158,6 +156,7 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
 
         #Checkpointing every 10 generations
         if((gen+1)%10==0):
+            print(f"Generation {gen+1}, accuracy {best_val_acc}, loss {loss}")
             checkpoint_data = {
                 'val_accuracies': val_accuracies,
                 'val_losses': val_losses,
