@@ -74,7 +74,7 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
     model = LeNet5()
     
     # Create the Server instance:
-    server = Server(model,DEVICE,"server_data")
+    server = Server(model,DEVICE)
 
     shards = server.sharding(dataset.dataset, 100, num_classes)
     client_sizes = [len(shard) for shard in shards]

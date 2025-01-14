@@ -1,24 +1,19 @@
 import torch
 import torch.optim as optim
+from torch.utils.data import DataLoader, Subset
+
 from copy import deepcopy
 import numpy as np
-from torch.utils.data import Subset
-import os
-from torch.utils.data import DataLoader, Subset
-#from utils.utils import evaluate
-#from utils.checkpointing_utils import save_checkpoint, load_checkpoint
 import logging
+
 from Client import Client
 
 log = logging.getLogger(__name__)
 
 class Server:
-    def __init__(self, global_model, device, CHECKPOINT_DIR):
+    def __init__(self, global_model, device):
         self.global_model = global_model
         self.device = device
-        self.CHECKPOINT_DIR = CHECKPOINT_DIR
-        # Ensure the checkpoint directory exists, creating it if necessary
-        os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 
     def fedavg_aggregate(self, client_states, client_sizes, client_avg_losses, client_avg_accuracies):
         """
