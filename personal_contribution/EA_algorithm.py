@@ -1,15 +1,20 @@
 import random
 from copy import deepcopy
-import os
+
 import torch
 import torch.nn as nn
-from statistics import mean
-import numpy as np
-from Individual import Individual
-from cifar100_loader import CIFAR100DataLoader
-from model import LeNet5
-from Server import Server
 
+from Individual import Individual
+from models.model import LeNet5
+from Server import Server
+from utils.utils import evaluate
+
+
+#constants
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+CRITERION = nn.NLLLoss()
+MOMENTUM = 0.9 
+BATCHSIZE = 64 
 
 def tournament_selection(population, tau=2):
     """
@@ -24,6 +29,7 @@ def tournament_selection(population, tau=2):
     winner = max(participants, key=lambda ind: ind.fitness)
     return deepcopy(winner)
 
+
 def client_size(individual, client_sizes):
     """
     Computes the number of total samples for individual
@@ -33,29 +39,8 @@ def client_size(individual, client_sizes):
         val += client_sizes[client]
     return val
 
-def evaluate(model, dataloader, DEVICE, criterion):
-    with torch.no_grad():
-        model.train(False) # Set Network to evaluation mode
-        running_corrects = 0
-        losses = []
-        for data, targets in dataloader:
-            data = data.to(DEVICE)        # Move the data to the GPU
-            targets = targets.to(DEVICE)  # Move the targets to the GPU
-            # Forward Pass
-            outputs = model(data)
-            loss = criterion(outputs, targets)
-            losses.append(loss.item())
-            # Get predictions
-            _, preds = torch.max(outputs.data, 1)
-            # Update Corrects
-            running_corrects += torch.sum(preds == targets.data).data.item()
-            # Calculate Accuracy
-            accuracy = running_corrects / float(len(dataloader.dataset))
 
-    return accuracy*100, mean(losses)
-
-
-def EA_algorithm(generations,population_size,num_clients,crossover_probability, dataset, valid_loader):
+def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_probability, dataset, valid_loader,lr,wd):
     """
     Perform the Evolutionary Algorithm (EA) to optimize the selection of clients.
     The EA consists of the following steps:
@@ -68,54 +53,71 @@ def EA_algorithm(generations,population_size,num_clients,crossover_probability, 
     :param generations: Number of generations to run the algorithm.
     :param population_size: Number of individuals in the population.
     :param num_clients: clients selected by each individual.
+    :param num_classes: Number of classes for each client (iid or non-iid).
     :param crossover_probability: Probability of crossover for each individual.
+    :param dataset: The dataset to be used for training.
+    :param valid_loader: The validation loader to evaluate the model.
+    :param lr: The learning rate to be used for training.
+    :param wd: The weight decay to be used for training.
+
 
     :return global_model: The global model obtained after the EA.
-    :return global_accuracy: The validation accuracy of the global model at each generation.
-    :return global_loss: The validation loss of the global model at each generation.
-    return training_loss: The training loss of the global model at each generation.
-    return training_accuracy: The training accuracy of the global model at each generation.
+    :return val_accuracies: The validation accuracy of the global model at each generation.
+    :return val_losses: The validation loss of the global model at each generation.
+    :return training_accuracies: The training loss of the global model at each generation.
+    :return training_losses: The training accuracy of the global model at each generation.
+    :return client_selection_count: The number of times each client was selected in the population.
     """
 
     # Initialize the population
     population = [Individual(genome=random.sample(range(100), k=num_clients)) for _ in range(population_size)]
     model = LeNet5()
-    DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-    criterion = nn.NLLLoss()
+    
     # Create the Server instance:
     server = Server(model,DEVICE,"server_data")
-    num_classes = 100
-    shards = server.sharding(dataset.dataset, num_clients, num_classes)
+
+    shards = server.sharding(dataset.dataset, 100, num_classes)
     client_sizes = [len(shard) for shard in shards]
-    LR = 0.01
-    batchsize = 64
-    WD = 0.001
-    MOMENTUM = 0.9
+    
+    train_losses = []
+    train_accuracies = []
+    val_losses = []
+    val_accuracies = []
+    client_selection_count = [0]*100
 
 
     for i in range(generations):
-        # Select randomly 3 individuals:
-        selected_individuals = population
+       
         # For each of them apply the fed_avg algorithm:
-        
         param_list = []
         averages_acc = []
         average_loss = []
-        for choosen_individual in selected_individuals:
-            resulting_model, acc_res, loss_res = server.train_federated(criterion, LR, MOMENTUM, batchsize, WD, choosen_individual, shards)
+        for individual in population:
+            #Update the client selection count
+            for client in individual.genome:
+                client_selection_count[client] += 1
+            
+            resulting_model, acc_res, loss_res = server.train_federated(CRITERION, lr, MOMENTUM, BATCHSIZE, wd, individual, shards)
             param_list.append(resulting_model)
             averages_acc.append(acc_res)
             average_loss.append(loss_res)
         
 
         #Here we should average all the models to obtain the global model...
-        averaged_model,  global_avg_loss, global_avg_accuracy = server.fedavg_aggregate(param_list, [client_size(i, client_sizes) for i in selected_individuals], average_loss, averages_acc)
+        averaged_model,  train_loss, train_accuracy = server.fedavg_aggregate(param_list, [client_size(i, client_sizes) for i in population], average_loss, averages_acc)
+        
+        train_losses.append(train_loss)
+        train_accuracies.append(train_accuracy)
+
         # Update the model with the result of the average:
         model.load_state_dict(averaged_model)
 
 
         # Then evaluate the validation accuracy of the global model
-        acc, loss = evaluate(model, valid_loader, DEVICE, criterion)
+        acc, loss = evaluate(model, valid_loader, CRITERION)
+
+        val_accuracies.append(acc)
+        val_losses.append(loss)
 
         print(f"Generation {i+1}, accuracy {acc}, loss {loss}")
 
@@ -128,19 +130,12 @@ def EA_algorithm(generations,population_size,num_clients,crossover_probability, 
                 parent2 = tournament_selection(population)
                 offspring.append(Individual.crossover(parent1, parent2))
             else:
+                #Mutation
                 parent = tournament_selection(population)
-                #parent.point_mutation()
+                parent.point_mutation()
                 offspring.append(parent)
 
         # Replace the population with the new offspring
         population = offspring 
             
-
-            
-if __name__ == '__main__':
-    #10% of the dataset kept for validation
-    BATCH_SIZE = 64
-    data_loader = CIFAR100DataLoader(batch_size=BATCH_SIZE, validation_split=0.1, download=True, num_workers=4, pin_memory=True)
-    trainloader, validloader, testloader = data_loader.train_loader, data_loader.val_loader, data_loader.test_loader
-    EA_algorithm(10, 3, 100, 0.7, trainloader, validloader)
-
+    return model, val_accuracies, val_losses,train_accuracies, train_losses, client_selection_count
