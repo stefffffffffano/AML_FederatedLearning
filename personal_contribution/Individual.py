@@ -1,3 +1,5 @@
+import random
+
 class Individual:
     def __init__(self, genome, total_clients=100, number_selected_clients=2):
         """
