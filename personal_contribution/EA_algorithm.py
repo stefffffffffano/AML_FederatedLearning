@@ -79,6 +79,8 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
     val_losses = []
     val_accuracies = []
     client_selection_count = [0]*100
+    best_model_state = None
+    best_val_acc = 0
     
 
     # Initialize the population
@@ -100,7 +102,7 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
     shards = server.sharding(dataset.dataset, 100, num_classes)
     client_sizes = [len(shard) for shard in shards]
 
-    for i in range(checkpoint_start_step,generations):
+    for gen in range(checkpoint_start_step,generations):
         # For each of them apply the fed_avg algorithm:
         param_list = []
         averages_acc = []
@@ -128,15 +130,18 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
 
         # Then evaluate the validation accuracy of the global model
         acc, loss = evaluate(model, valid_loader, CRITERION)
+        if acc > best_val_acc:
+                best_val_acc = acc
+                best_model_state = deepcopy(model.state_dict())
 
         val_accuracies.append(acc)
         val_losses.append(loss)
 
-        print(f"Generation {i+1}, accuracy {acc}, loss {loss}")
+        print(f"Generation {gen+1}, accuracy {acc}, loss {loss}")
 
         offspring = []
         #Offspring-> offspring size is the same as population size
-        for i in range(population_size):
+        for j in range(population_size):
             # Crossover
             if random.random() < crossover_probability:
                 parent1 = tournament_selection(population)
@@ -152,7 +157,7 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
         population = offspring 
 
         #Checkpointing every 10 generations
-        if((i+1)%10==0):
+        if((gen+1)%10==0):
             checkpoint_data = {
                 'val_accuracies': val_accuracies,
                 'val_losses': val_losses,
@@ -161,7 +166,7 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
                 'client_selection_count': client_selection_count,
                 'population': [individual.to_dict() for individual in population]
             }
-            save_checkpoint(model, None, i+1, f"LR{lr}_WD{wd}", subfolder="personal_contribution", checkpoint_data=checkpoint_data)
+            save_checkpoint(model, None, gen+1, f"LR{lr}_WD{wd}", subfolder="personal_contribution", checkpoint_data=checkpoint_data)
 
-            
+    model.load_state_dict(best_model_state)   
     return model, val_accuracies, val_losses,train_accuracies, train_losses, client_selection_count
