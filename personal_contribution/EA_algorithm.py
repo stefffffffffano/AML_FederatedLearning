@@ -1,5 +1,6 @@
 import random
 from copy import deepcopy
+import os
 
 import torch
 import torch.nn as nn
@@ -8,13 +9,14 @@ from Individual import Individual
 from models.model import LeNet5
 from Server import Server
 from utils.utils import evaluate
-
+from utils.checkpointing_utils import save_checkpoint, load_checkpoint
 
 #constants
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 CRITERION = nn.NLLLoss()
 MOMENTUM = 0.9 
 BATCHSIZE = 64 
+CHECKPOINTING_PATH = '../checkpoints/'
 
 def tournament_selection(population, tau=2):
     """
@@ -69,25 +71,36 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
     :return client_selection_count: The number of times each client was selected in the population.
     """
 
-    # Initialize the population
-    population = [Individual(genome=random.sample(range(100), k=num_clients)) for _ in range(population_size)]
-    model = LeNet5()
-    
-    # Create the Server instance:
-    server = Server(model,DEVICE)
+    #Check if the checkpointing directory exists
+    os.makedirs(CHECKPOINTING_PATH, exist_ok=True)
 
-    shards = server.sharding(dataset.dataset, 100, num_classes)
-    client_sizes = [len(shard) for shard in shards]
-    
     train_losses = []
     train_accuracies = []
     val_losses = []
     val_accuracies = []
     client_selection_count = [0]*100
+    
 
+    # Initialize the population
+    population = [Individual(genome=random.sample(range(100), k=num_clients)) for _ in range(population_size)]
+    model = LeNet5()
 
-    for i in range(generations):
-       
+    #load checkpoint if it exists
+    checkpoint_start_step, data_to_load = load_checkpoint(model=model,optimizer=None,hyperparameters=f"LR{lr}_WD{wd}",subfolder="personal_contribution")
+    if data_to_load is not None:
+        val_accuracies = data_to_load['val_accuracies']
+        val_losses = data_to_load['val_losses']
+        train_accuracies = data_to_load['train_accuracies']
+        train_losses = data_to_load['train_losses']
+        client_selection_count = data_to_load['client_selection_count']
+        population = data_to_load['population']
+    # Create the Server instance:
+    server = Server(model,DEVICE)
+
+    shards = server.sharding(dataset.dataset, 100, num_classes)
+    client_sizes = [len(shard) for shard in shards]
+
+    for i in range(checkpoint_start_step,generations):
         # For each of them apply the fed_avg algorithm:
         param_list = []
         averages_acc = []
@@ -137,5 +150,18 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
 
         # Replace the population with the new offspring
         population = offspring 
+
+        #Checkpointing every 10 generations
+        if((i+1)%1==0):
+            checkpoint_data = {
+                'val_accuracies': val_accuracies,
+                'val_losses': val_losses,
+                'train_accuracies': train_accuracies,
+                'train_losses': train_losses,
+                'client_selection_count': client_selection_count,
+                'population': population
+            }
+            save_checkpoint(model, None, i+1, f"LR{lr}_WD{wd}", subfolder="personal_contribution", checkpoint_data=checkpoint_data)
+
             
     return model, val_accuracies, val_losses,train_accuracies, train_losses, client_selection_count
