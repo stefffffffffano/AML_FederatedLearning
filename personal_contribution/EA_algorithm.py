@@ -84,7 +84,16 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
     
 
     # Initialize the population
-    population = [Individual(genome=random.sample(range(100), k=num_clients)) for _ in range(population_size)]
+    # Shuffle clients before assigning them
+    all_clients = list(range(100))
+    random.shuffle(all_clients)
+
+    #No individual, at the beginning, will select a client twice
+    population = [
+        Individual(genome=all_clients[i * num_clients:(i + 1) * num_clients])
+        for i in range(population_size)
+    ]
+    #population = [Individual(genome=random.sample(range(100), k=num_clients)) for _ in range(population_size)]
     model = LeNet5()
 
     #load checkpoint if it exists
@@ -127,7 +136,6 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
         # Update the model with the result of the average:
         model.load_state_dict(averaged_model)
 
-
         # Then evaluate the validation accuracy of the global model
         acc, loss = evaluate(model, valid_loader, CRITERION)
         if acc > best_val_acc:
@@ -139,7 +147,9 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
 
         offspring = []
         #Offspring-> offspring size is the same as population size
-        for j in range(population_size):
+        elite = sorted(population, key=lambda ind: ind.fitness, reverse=True)[0]
+        offspring.append(elite) #Keep the best individual
+        for j in range(population_size-1):
             # Crossover
             if random.random() < crossover_probability:
                 parent1 = tournament_selection(population)

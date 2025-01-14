@@ -100,7 +100,7 @@ class Server:
         #    and replaces the current parameters of global_model with the returned ones.
         aggregated_state, train_loss, train_accuracy = self.fedavg_aggregate(client_states, [client_sizes[i] for i in selected_clients.genome], client_avg_losses, client_avg_accuracies)
         # UPDATE THE FITNESS OF INDIVIDUAL:
-        selected_clients.fitness = train_accuracy
+        selected_clients.fitness = train_loss
 
         self.global_model.load_state_dict(aggregated_state)
 
