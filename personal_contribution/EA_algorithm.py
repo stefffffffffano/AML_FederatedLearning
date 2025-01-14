@@ -18,17 +18,21 @@ MOMENTUM = 0.9
 BATCHSIZE = 64 
 CHECKPOINTING_PATH = '../checkpoints/'
 
-def tournament_selection(population, tau=2):
+def tournament_selection(population, tau=2, p_diver=0.05):
     """
     Perform tournament selection to choose parents.
     Randomly select tau individuals and choose the best one.
+
 
     :param population: List of Individuals.
     :param tau: Number of individuals to select.
     :return: Selected Individual.
     """
     participants = random.sample(population, tau)
-    winner = max(participants, key=lambda ind: ind.fitness)
+    if random.random() < p_diver:
+        winner = min(participants, key=lambda ind: ind.fitness)
+    else:
+      winner = max(participants, key=lambda ind: ind.fitness)
     return deepcopy(winner)
 
 
