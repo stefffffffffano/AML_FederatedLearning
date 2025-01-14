@@ -93,7 +93,7 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
         train_accuracies = data_to_load['train_accuracies']
         train_losses = data_to_load['train_losses']
         client_selection_count = data_to_load['client_selection_count']
-        population = data_to_load['population']
+        population = [Individual.from_dict(ind) for ind in data_to_load['population']]
     # Create the Server instance:
     server = Server(model,DEVICE)
 
@@ -152,14 +152,14 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
         population = offspring 
 
         #Checkpointing every 10 generations
-        if((i+1)%1==0):
+        if((i+1)%10==0):
             checkpoint_data = {
                 'val_accuracies': val_accuracies,
                 'val_losses': val_losses,
                 'train_accuracies': train_accuracies,
                 'train_losses': train_losses,
                 'client_selection_count': client_selection_count,
-                'population': population
+                'population': [individual.to_dict() for individual in population]
             }
             save_checkpoint(model, None, i+1, f"LR{lr}_WD{wd}", subfolder="personal_contribution", checkpoint_data=checkpoint_data)
 
