@@ -27,7 +27,8 @@ class Individual:
         Mutate the genome by changing 1 client randomly.
         Ensures that the selected clients remain disjoint.
         """
-        num_changes = 1  # Number of mutations
+        max_mutations = self.number_selected_clients-1
+        num_changes = random.randint(1, max_mutations)  # Number of mutations
         available_clients = set(range(self.total_clients)) - set(self.genome)  # Clients not in genome
     
         # Remove random clients from the genome

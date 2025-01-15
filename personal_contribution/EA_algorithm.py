@@ -85,6 +85,7 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
     client_selection_count = [0]*100
     best_model_state = None
     best_val_acc = 0
+    last_bests = []
     
 
     # Initialize the population
@@ -170,6 +171,17 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
 
         #Checkpointing every 10 generations
         if((gen+1)%10==0):
+            last_bests.append(best_val_acc)
+            if((gen+1)%30==0):
+                last_bests = last_bests[-3:]
+                if(last_bests[0]==last_bests[1] and last_bests[1]==last_bests[2]):
+                    #reintroduce diversity
+                    random.shuffle(all_clients)
+                    population = [
+                        Individual(genome=all_clients[i * num_clients:(i + 1) * num_clients])
+                        for i in range(population_size-1)
+                    ]
+                    population.append(elite) #keep the elite
             print(f"Generation {gen+1}, accuracy {best_val_acc}, loss {loss}")
             checkpoint_data = {
                 'val_accuracies': val_accuracies,
