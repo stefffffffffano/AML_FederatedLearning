@@ -66,6 +66,34 @@ class Individual:
 
         return Individual(genome=new_genome, total_clients=parent1.total_clients)
 
+    @staticmethod
+    def two_cut_crossover_(parent1, parent2):
+        """
+        Perform a two-cut crossover between two parent genomes.
+        Randomly select two points and exchange the segments between them.
+
+        :param parent1: First parent Individual.
+        :param parent2: Second parent Individual.
+        :return: New Individual (offspring).
+        """
+        if len(parent1.genome) < 2:
+            raise ValueError("Genome too small for two-cut crossover.")
+
+        # Choose two distinct cut points ensuring cut1 < cut2
+        cut1, cut2 = sorted(random.sample(range(1, len(parent1.genome)), 2))
+
+        # Cross the segments between cut points
+        new_genome = parent1.genome[:cut1] + parent2.genome[cut1:cut2] + parent1.genome[cut2:]
+
+        # Make sure the new genome is valid and disjoint
+        unique_genes = list(set(new_genome))
+        while len(unique_genes) < parent1.number_selected_clients:
+            # Add missing genes from the set of all possible genes
+            missing_genes = list(set(range(parent1.total_clients)) - set(unique_genes))
+            unique_genes.extend(random.sample(missing_genes, parent1.number_selected_clients - len(unique_genes)))
+
+        return Individual(genome=unique_genes, total_clients=parent1.total_clients)
+
     def to_dict(self):
         """
         Convert the Individual object to a dictionary for JSON serialization.
