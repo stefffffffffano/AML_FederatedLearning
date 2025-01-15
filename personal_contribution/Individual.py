@@ -17,7 +17,7 @@ class Individual:
     def set_fitness(self, fitness_value):
         """
         Set the fitness value for the individual.
-        
+
         :param fitness_value: Float value representing the fitness (e.g., loss or accuracy).
         """
         self.fitness = fitness_value
@@ -27,10 +27,9 @@ class Individual:
         Mutate the genome by changing 1 client randomly.
         Ensures that the selected clients remain disjoint.
         """
-        max_mutations = self.number_selected_clients-1
-        num_changes = random.randint(1, max_mutations)  # Number of mutations
+        num_changes = 1  # Number of mutations
         available_clients = set(range(self.total_clients)) - set(self.genome)  # Clients not in genome
-    
+
         # Remove random clients from the genome
         to_remove = random.sample(self.genome, k=num_changes)
         for client in to_remove:
@@ -66,8 +65,19 @@ class Individual:
 
         return Individual(genome=new_genome, total_clients=parent1.total_clients)
 
+    def to_dict(self):
+        """
+        Convert the Individual object to a dictionary for JSON serialization.
+        """
+        return {
+            'genome': self.genome,
+            'fitness': self.fitness,
+            'total_clients': self.total_clients,
+            'number_selected_clients': self.number_selected_clients
+        }
+    
     @staticmethod
-    def two_cut_crossover_(parent1, parent2):
+    def two_cut_crossover_2(parent1, parent2):
         """
         Perform a two-cut crossover between two parent genomes.
         Randomly select two points and exchange the segments between them.
@@ -93,17 +103,6 @@ class Individual:
             unique_genes.extend(random.sample(missing_genes, parent1.number_selected_clients - len(unique_genes)))
 
         return Individual(genome=unique_genes, total_clients=parent1.total_clients)
-
-    def to_dict(self):
-        """
-        Convert the Individual object to a dictionary for JSON serialization.
-        """
-        return {
-            'genome': self.genome,
-            'fitness': self.fitness,
-            'total_clients': self.total_clients,
-            'number_selected_clients': self.number_selected_clients
-        }
 
     @classmethod
     def from_dict(cls, data):
