@@ -9,7 +9,7 @@ from Individual import Individual
 from models.model import LeNet5
 from Server import Server
 from utils.utils import evaluate
-from utils.checkpointing_utils import save_checkpoint, load_checkpoint
+from utils.checkpointing_utils import save_checkpoint, load_checkpoint,delete_existing_checkpoints
 
 #constants
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -193,5 +193,6 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
             }
             save_checkpoint(model, None, gen+1, f"LR{lr}_WD{wd}", subfolder="personal_contribution", checkpoint_data=checkpoint_data)
 
-    model.load_state_dict(best_model_state)   
+    model.load_state_dict(best_model_state) 
+    delete_existing_checkpoints(subfolder="personal_contribution")  
     return model, val_accuracies, val_losses,train_accuracies, train_losses, client_selection_count
