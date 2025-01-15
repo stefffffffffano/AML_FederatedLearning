@@ -172,7 +172,7 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
         #Checkpointing every 10 generations
         if((gen+1)%10==0):
             last_bests.append(best_val_acc)
-            if((gen+1)%30==0):
+            if((gen+1)>=30):
                 last_bests = last_bests[-3:]
                 if(last_bests[0]==last_bests[1] and last_bests[1]==last_bests[2]):
                     #reintroduce diversity
