@@ -16,6 +16,7 @@ DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 CRITERION = nn.NLLLoss()
 MOMENTUM = 0.9 
 BATCHSIZE = 64 
+TOTAL_CLIENTS = 100
 CHECKPOINTING_PATH = '../checkpoints/'
 
 def tournament_selection(population, tau=2, p_diver=0.05):
@@ -26,6 +27,7 @@ def tournament_selection(population, tau=2, p_diver=0.05):
 
     :param population: List of Individuals.
     :param tau: Number of individuals to select.
+    :param p_diver: Probability of choosing the worst individual in the tournament, done for the fitness hole.
     :return: Selected Individual.
     """
     participants = random.sample(population, tau)
@@ -93,12 +95,11 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
     all_clients = list(range(100))
     random.shuffle(all_clients)
 
-    #No individual, at the beginning, will select a client twice
+    #Disjoint subsets of clients selected by each individual
     population = [
         Individual(genome=all_clients[i * num_clients:(i + 1) * num_clients])
         for i in range(population_size)
     ]
-    #population = [Individual(genome=random.sample(range(100), k=num_clients)) for _ in range(population_size)]
     model = LeNet5()
 
     #load checkpoint if it exists
@@ -113,7 +114,7 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
     # Create the Server instance:
     server = Server(model,DEVICE)
 
-    shards = server.sharding(dataset.dataset, 100, num_classes)
+    shards = server.sharding(dataset.dataset, TOTAL_CLIENTS, num_classes)
     client_sizes = [len(shard) for shard in shards]
 
     for gen in range(checkpoint_start_step,generations):
@@ -194,5 +195,6 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
             save_checkpoint(model, None, gen+1, f"LR{lr}_WD{wd}", subfolder="personal_contribution", checkpoint_data=checkpoint_data)
 
     model.load_state_dict(best_model_state) 
+    #delete the existing checkpoints for the next execution
     delete_existing_checkpoints(subfolder="personal_contribution")  
     return model, val_accuracies, val_losses,train_accuracies, train_losses, client_selection_count

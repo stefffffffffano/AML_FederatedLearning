@@ -102,42 +102,10 @@ class Server:
         # UPDATE THE FITNESS OF INDIVIDUAL:
         selected_clients.fitness = train_loss
 
-        self.global_model.load_state_dict(aggregated_state)
-
         train_accuracies.append(train_accuracy)
         train_losses.append(train_loss)
         
-
-        return self.global_model.state_dict(), train_accuracy, train_loss
-
-    def skewed_probabilities(self, number_of_clients, gamma=0.5):
-            # Generate skewed probabilities using a Dirichlet distribution
-            probabilities = np.random.dirichlet(np.ones(number_of_clients) * gamma)
-            return probabilities
-
-    def client_selection(self,number_of_clients, clients_fraction, probabilities=None):
-        """
-        Selects a subset of clients based on uniform or skewed distribution.
-        
-        Args:
-        number_of_clients (int): Total number of clients.
-        clients_fraction (float): Fraction of clients to be selected.
-        uniform (bool): If True, selects clients uniformly. If False, selects clients based on a skewed distribution.
-        gamma (float): Hyperparameter for the Dirichlet distribution controlling the skewness (only used if uniform=False).
-        
-        Returns:
-        list: List of selected client indices.
-        """
-        num_clients_to_select = int(number_of_clients * clients_fraction)
-        
-        if probabilities is None:
-            # Uniformly select clients without replacement
-            selected_clients = np.random.choice(number_of_clients, num_clients_to_select, replace=False)
-        else:
-            selected_clients = np.random.choice(number_of_clients, num_clients_to_select, replace=False, p=probabilities)
-        
-        return selected_clients
-
+        return aggregated_state, train_accuracy, train_loss
 
 
     def sharding(self, dataset, number_of_clients, number_of_classes=100):
