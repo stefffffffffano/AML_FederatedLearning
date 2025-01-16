@@ -336,16 +336,16 @@ Clients receive an IID distribution of the data.
 ### \( J = 4 \), 2000 Rounds  
 
 - **Learning Rate (lr):** _0.1_  
-- **Weight Decay (wd):** _0.001_  
+- **Weight Decay (wd):** _0.0001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _47.81 %_  
+- **Accuracy:** _45.96 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<images_report/image-2.png>)
+![Training and Validation Accuracy](<plots_federated/Federated_num_classes_100_local_steps_4_LR_0.1_WD_0.0001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<images_report/image-3.png>)
+![Training and Validation Loss](<plots_federated/Federated_num_classes_100_local_steps_4_LR_0.1_WD_0.0001_loss.png>)
 
 ---
 
@@ -355,13 +355,13 @@ Clients receive an IID distribution of the data.
 - **Weight Decay (wd):** _0.0001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _42.38 %_  
+- **Accuracy:** _40.9 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<images_report/Federated_num_classes_100_local_steps_8_LR_0.1_WD_0.0001_accuracy.png>)
+![Training and Validation Accuracy](<plots_federated/Federated_num_classes_100_local_steps_8_LR_0.1_WD_0.0001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<images_report/Federated_num_classes_100_local_steps_8_LR_0.1_WD_0.0001_loss.png>)
+![Training and Validation Loss](<plots_federated/Federated_num_classes_100_local_steps_8_LR_0.1_WD_0.0001_loss.png>)
 
 ---
 
@@ -374,7 +374,7 @@ Clients receive an IID distribution of the data.
 - **Accuracy:** _39.17 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<images_report/Federated_num_classes_100_local_steps_16_LR_0.01_WD_0.0001_accuracy.png>)
+![Training and Validation Accuracy](<plots_federated/Federated_num_classes_100_local_steps_16_LR_0.01_WD_0.0001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<images_report/Federated_num_classes_100_local_steps_16_LR_0.01_WD_0.0001_loss.png>)
+![Training and Validation Loss](<plots_federated/Federated_num_classes_100_local_steps_16_LR_0.01_WD_0.0001_loss.png>)

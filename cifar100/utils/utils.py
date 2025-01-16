@@ -25,7 +25,7 @@ def evaluate(model, dataloader):
             _, preds = torch.max(outputs.data, 1)
             # Update Corrects
             running_corrects += torch.sum(preds == targets.data).data.item()
-            # Calculate Accuracy
-            accuracy = running_corrects / float(len(dataloader.dataset))
+        # Calculate Accuracy
+        accuracy = running_corrects / float(len(dataloader.dataset))
 
     return accuracy*100, mean(losses)
