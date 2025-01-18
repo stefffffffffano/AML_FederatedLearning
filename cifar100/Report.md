@@ -19,7 +19,7 @@ For the centralized version on CIFAR-100, we obtained the best accuracy with lr 
 
 ![alt text](plots_centralized/CentralizedCifar_accuracy.png)
 
-We reached, with this configuration, an accuracy of 55.92%, but with this high number of epochs the model clearly started to overfit.
+We reached, with this configuration, an accuracy of 55.65%, but with this high number of epochs the model clearly started to overfit.
 
 Here we show also train and validation losses:  
 
