@@ -16,6 +16,7 @@ class Client:
         self.data_loader = data_loader
         self.model = model.to(device)
         self.device = device
+        self.char_to_idx = char_to_idx
 
     def client_update(self, client_data, criterion, optimizer, local_steps=4, detailed_print=False):
         """
