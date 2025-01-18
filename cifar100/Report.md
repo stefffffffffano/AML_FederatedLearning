@@ -17,17 +17,18 @@ The same grid of values is used for hyperparameter tuning in all the experiments
 
 For the centralized version on CIFAR-100, we obtained the best accuracy with lr = 0.01, wd = 0.001 and cosine annealing as scheduler. We report here training and validation accuracy for this specific setting after 200 epochs:  
 
-![alt text](images_report/image.png)
+![alt text](plots_centralized/CentralizedCifar_accuracy.png)
 
 We reached, with this configuration, an accuracy of 55.92%, but with this high number of epochs the model clearly started to overfit.
 
 Here we show also train and validation losses:  
 
-![alt text](images_report/image-1.png)  
+![alt text](plots_centralized/CentralizedCifar_loss.png)    
+
+We notice that the model is clearly overfitting towards the end of the training, we could have trained for less epochs.
 
 # Federated CIFAR-100
 
-(All the results of hyperparameter tuning are not report for brevity, but they are all available in the folder federated_plots)
 
 For the federated setting, the tests for hyperparamter tuning brought us to this configuration: lr=0.1 and wd = 0.001, reaching a final accuracy of 47.81%. Here we report training and validation accuracies over 2000 rounds:  
 
