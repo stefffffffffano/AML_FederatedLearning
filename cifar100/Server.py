@@ -212,7 +212,7 @@ class Server:
         TOTAL_NUM_CLASSES = len(set(labels))
 
         shard_size = len(dataset) // (number_of_clients * number_of_classes)  # Shard size for each class per client
-        print("dataset len: ", len(dataset), ", shard size: ", shard_size, ", number of shards: ",(number_of_clients * number_of_classes))
+        #print("dataset len: ", len(dataset), ", shard size: ", shard_size, ", number of shards: ",(number_of_clients * number_of_classes))
         if shard_size == 0:
             raise ValueError("Shard size is too small; increase dataset size or reduce number of clients/classes.")
 
