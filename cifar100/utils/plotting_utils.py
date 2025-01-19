@@ -42,7 +42,7 @@ def plot_local_data_distribution(client_dataset, dir_name, file_name):
         file_name: Name of the file to save the plot.
     """
     # Fixed base directory
-    directory =  '../plots_federated/data_sharding_distributions/cifar100'+ '_' + dir_name
+    directory =  './plots_federated/data_sharding_distributions/cifar100'+ '_' + dir_name
     # Ensure the base directory exists
     os.makedirs(directory, exist_ok=True)
     # Complete path for the file
