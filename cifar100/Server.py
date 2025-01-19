@@ -1,16 +1,18 @@
 import torch
 import torch.optim as optim
+from torch.utils.data import DataLoader, Subset
+
 from copy import deepcopy
 import numpy as np
-from torch.utils.data import Subset
-from Client import Client
 import os
 import random
-from torch.utils.data import DataLoader, Subset
+import logging
+
+from Client import Client
 from utils.utils import evaluate
 from utils.checkpointing_utils import save_checkpoint, load_checkpoint
-from utils.federated_utils import plot_local_data_distribution
-import logging
+from cifar100.utils.plotting_utils import plot_local_data_distribution
+
 
 log = logging.getLogger(__name__)
 
