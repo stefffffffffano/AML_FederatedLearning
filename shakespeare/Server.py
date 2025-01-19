@@ -6,17 +6,15 @@ from torch.utils.data import Subset
 import os
 from torch.utils.data import DataLoader, Subset
 import logging
-import Client
 
 log = logging.getLogger(__name__)
-
-
 
 class Server:
     def __init__(self, global_model, device, CHECKPOINT_DIR):
         self.global_model = global_model
         self.device = device
         self.CHECKPOINT_DIR = CHECKPOINT_DIR
+        # Ensure the checkpoint directory exists, creating it if necessary
         os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 
     def fedavg_aggregate(self, client_states, client_sizes, client_avg_losses, client_avg_accuracies):
@@ -65,7 +63,7 @@ class Server:
 
 
     # Federated Learning Training Loop
-    def train_federated(self, criterion, trainloader, num_clients, rounds, lr, momentum, batchsize, wd, C=0.1, local_steps=4, log_freq=10, detailed_print=True,gamma=None):
+    def train_federated(self, criterion, raw_data, trainloader, num_clients, rounds, lr, momentum, batchsize, wd, C=0.1, local_steps=4, log_freq=10, detailed_print=True,gamma=None):
         # val_accuracies = []
         # val_losses = []
         train_accuracies = []
@@ -75,7 +73,7 @@ class Server:
         #best_val_acc = 0.0
         best_train_loss = float('inf')
 
-        shards = self.sharding(trainloader, char_to_idx) #each shard represent the training data for one client
+        shards = self.sharding(raw_data, char_to_idx) #each shard represent the training data for one client
         client_sizes = [len(shard) for shard in shards]
 
         self.global_model.to(self.device) #as alwayse, we move the global model to the specified device (CPU or GPU)
