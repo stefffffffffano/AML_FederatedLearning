@@ -6,18 +6,147 @@ from torch.utils.data import Subset
 import os
 from torch.utils.data import DataLoader, Subset
 import logging
-import Client
-
+from torch.utils.data import DataLoader, TensorDataset
+from Client import Client
+from torch.nn.utils.rnn import pad_sequence
+import json
 log = logging.getLogger(__name__)
 
 
 
+
 class Server:
-    def __init__(self, global_model, device, CHECKPOINT_DIR):
+    def __init__(self, global_model, device, char_to_idx, CHECKPOINT_DIR):
         self.global_model = global_model
         self.device = device
+        self.char_to_idx = char_to_idx
         self.CHECKPOINT_DIR = CHECKPOINT_DIR
+        # Ensure the checkpoint directory exists, creating it if necessary
         os.makedirs(CHECKPOINT_DIR, exist_ok=True)
+
+    def save_checkpoint(self, model, optimizer, epoch, hyperparameters, subfolder="", checkpoint_data=None):
+        """
+        Saves the model checkpoint and removes the previous one if it exists.
+
+        Arguments:
+        model -- The model whose state is to be saved.
+        optimizer -- The optimizer whose state is to be saved (can be None).
+        epoch -- The current epoch of the training process.
+        hyperparameters -- A string representing the model's hyperparameters for file naming.
+        subfolder -- Optional subfolder within the checkpoint directory to save the checkpoint.
+        checkpoint_data -- Data to save in a JSON file (e.g., training logs).
+        """
+        # Define the path for the subfolder where checkpoints will be stored
+        subfolder_path = os.path.join(self.CHECKPOINT_DIR, subfolder)
+        # Create the subfolder if it doesn't exist
+        os.makedirs(subfolder_path, exist_ok=True)
+
+        # Construct filenames for both the model checkpoint and the associated JSON file
+        filename = f"model_epoch_{epoch}_params_{hyperparameters}.pth"
+        filepath = os.path.join(subfolder_path, filename)
+        filename_json = f"model_epoch_{epoch}_params_{hyperparameters}.json"
+        filepath_json = os.path.join(subfolder_path, filename_json)
+
+        # Define the filenames for the previous checkpoint files, to remove them if necessary
+        previous_filepath = os.path.join(subfolder_path, f"model_epoch_{epoch - 1}_params_{hyperparameters}.pth")
+        previous_filepath_json = os.path.join(subfolder_path, f"model_epoch_{epoch - 1}_params_{hyperparameters}.json")
+
+        # Remove the previous checkpoint if it exists, but only for epochs greater than 1
+        if epoch > 1 and os.path.exists(previous_filepath):
+            os.remove(previous_filepath)
+            os.remove(previous_filepath_json)
+
+        # Prepare the checkpoint data dictionary
+        checkpoint = {'model_state_dict': model.state_dict(), 'epoch': epoch}
+        # If an optimizer is provided, save its state as well
+        if optimizer is not None:
+            checkpoint['optimizer_state_dict'] = optimizer.state_dict()
+
+        # Save the model and optimizer (if provided) state dictionary to the checkpoint file
+        torch.save(checkpoint, filepath)
+        print(f"Checkpoint saved: {filepath}")
+
+        # If additional data (e.g., training logs) is provided, save it to a JSON file
+        if checkpoint_data:
+            with open(filepath_json, 'w') as json_file:
+                json.dump(checkpoint_data, json_file, indent=4)
+
+    def load_checkpoint(self, model, optimizer, hyperparameters, subfolder=""):
+        """
+        Loads the latest checkpoint available based on the specified hyperparameters.
+
+        Arguments:
+        model -- The model whose state will be updated from the checkpoint.
+        optimizer -- The optimizer whose state will be updated from the checkpoint (can be None).
+        hyperparameters -- A string representing the model's hyperparameters for file naming.
+        subfolder -- Optional subfolder within the checkpoint directory to look for checkpoints.
+
+        Returns:
+        The next epoch to resume from and the associated JSON data if available.
+        """
+        # Define the path to the subfolder where checkpoints are stored
+        subfolder_path = os.path.join(self.CHECKPOINT_DIR, subfolder)
+
+        # If the subfolder doesn't exist, print a message and start from epoch 1
+        if not os.path.exists(subfolder_path):
+            print("No checkpoint found, starting from epoch 1.")
+            return 1, None  # Epoch starts from 1
+
+        # Search for checkpoint files in the subfolder that match the hyperparameters
+        files = [f for f in os.listdir(subfolder_path) if f"params_{hyperparameters}" in f and f.endswith('.pth')]
+
+        # If checkpoint files are found, load the one with the highest epoch number
+        if files:
+            latest_file = max(files, key=lambda x: int(x.split('_')[2]))  # Find the latest epoch file
+            filepath = os.path.join(subfolder_path, latest_file)
+            checkpoint = torch.load(filepath, weights_only=True)
+
+            # Load the model state from the checkpoint
+            model.load_state_dict(checkpoint['model_state_dict'])
+            # If an optimizer is provided, load its state as well
+            if optimizer:
+                optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+            # Try to load the associated JSON file if available
+            json_filepath = os.path.join(subfolder_path, latest_file.replace('.pth', '.json'))
+            json_data = None
+            if os.path.exists(json_filepath):
+                # If the JSON file exists, load its contents
+                with open(json_filepath, 'r') as json_file:
+                    json_data = json.load(json_file)
+                print("Data loaded!")
+            else:
+                # If no JSON file exists, print a message
+                print("No data found")
+
+            # Print the epoch from which the model is resuming
+            print(f"Checkpoint found: Resuming from epoch {checkpoint['epoch'] + 1}\n\n")
+            return checkpoint['epoch'] + 1, json_data
+
+        # If no checkpoint is found, print a message and start from epoch 1
+        print("No checkpoint found, starting from epoch 1..\n\n")
+        return 1, None  # Epoch starts from 1
+    
+    def delete_existing_checkpoints(self, subfolder=""):
+        """
+        Deletes all existing checkpoints in the specified subfolder.
+
+        Arguments:
+        subfolder -- Optional subfolder within the checkpoint directory to delete checkpoints from.
+        """
+        subfolder_path = os.path.join(self.CHECKPOINT_DIR, subfolder)
+        if os.path.exists(subfolder_path):
+            for file_name in os.listdir(subfolder_path):
+                file_path = os.path.join(subfolder_path, file_name)
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+            print(f"All existing checkpoints in {subfolder_path} have been deleted.")
+        else:
+            print(f"No checkpoint folder found at {subfolder_path}.")
+
+    def char_to_tensor(self, characters):
+        indices = [self.char_to_idx.get(char, self.char_to_idx['<pad>']) for char in characters] # Get the index for the character. If not found, use the index for padding.
+        return torch.tensor(indices, dtype=torch.long)
 
     def fedavg_aggregate(self, client_states, client_sizes, client_avg_losses, client_avg_accuracies):
         """
@@ -65,7 +194,7 @@ class Server:
 
 
     # Federated Learning Training Loop
-    def train_federated(self, criterion, trainloader, num_clients, rounds, lr, momentum, batchsize, wd, C=0.1, local_steps=4, log_freq=10, detailed_print=True,gamma=None):
+    def train_federated(self, criterion, raw_data, num_clients, rounds, lr, momentum, batchsize, wd, C=0.1, local_steps=4, log_freq=10, detailed_print=True,gamma=None):
         # val_accuracies = []
         # val_losses = []
         train_accuracies = []
@@ -75,7 +204,7 @@ class Server:
         #best_val_acc = 0.0
         best_train_loss = float('inf')
 
-        shards = self.sharding(trainloader, char_to_idx) #each shard represent the training data for one client
+        shards = self.sharding(raw_data) #each shard represent the training data for one client
         client_sizes = [len(shard) for shard in shards]
 
         self.global_model.to(self.device) #as alwayse, we move the global model to the specified device (CPU or GPU)
@@ -116,7 +245,7 @@ class Server:
                 client_loader = DataLoader(shards[client_id], batch_size=batchsize, shuffle=True)
 
                 print_log =  (round_num+1) % log_freq == 0 and detailed_print
-                client = Client(client_id, client_loader, local_model, self.device, char_to_idx)
+                client = Client(client_id, client_loader, local_model, self.device, self.char_to_idx)
                 client_local_state, client_avg_loss, client_avg_accuracy  = client.client_update(client_loader, criterion, optimizer, local_steps, print_log)
 
                 client_states.append(client_local_state)
@@ -151,7 +280,7 @@ class Server:
                     'train_losses': train_losses,
                     'client_selection_count': client_selection_count
                 }
-                save_checkpoint(self.global_model,optimizer=None, epoch=round_num, hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/", checkpoint_data=checkpoint_data)
+                self.save_checkpoint(self.global_model,optimizer=None, epoch=round_num, hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/", checkpoint_data=checkpoint_data)
                 if detailed_print:
                     print(f"------------------------------ Round {round_num+1} terminated: model updated -----------------------------\n\n" )
 
@@ -189,7 +318,7 @@ class Server:
 
 
 
-    def sharding(self, data, char_to_idx):
+    def sharding(self, data):
         """
         Prepares individual shards for each user, returning a Subset for each.
 
@@ -207,11 +336,11 @@ class Server:
             target_tensors = []
 
             for entry, target in zip(data['user_data'][user]['x'], data['user_data'][user]['y']):
-              input_tensors.append(char_to_tensor(entry))  # Use the full sequence of x
-              target_tensors.append(char_to_tensor(target))  # Directly use the corresponding y as target
+              input_tensors.append(self.char_to_tensor(entry))  # Use the full sequence of x
+              target_tensors.append(self.char_to_tensor(target))  # Directly use the corresponding y as target
 
             # Padding inputs to ensure all inputs in a batch have the same length
-            padded_inputs = pad_sequence(input_tensors, batch_first=True, padding_value=char_to_idx['<pad>'])
+            padded_inputs = pad_sequence(input_tensors, batch_first=True, padding_value=self.char_to_idx['<pad>'])
             targets = torch.cat(target_tensors)
 
             # Creating the TensorDataset for the user
