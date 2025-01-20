@@ -164,7 +164,7 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
             else:
                 #Mutation
                 parent = tournament_selection(population)
-                parent.point_mutation()
+                parent.mutation()
                 offspring.append(parent)
 
         # Replace the population with the new offspring

@@ -22,12 +22,12 @@ class Individual:
         """
         self.fitness = fitness_value
 
-    def point_mutation(self):
+    def mutation(self):
         """
         Mutate the genome by changing 1 client randomly.
         Ensures that the selected clients remain disjoint.
         """
-        num_changes = 1  # Number of mutations
+        num_changes = self.number_selected_clients  # Number of mutations
         available_clients = set(range(self.total_clients)) - set(self.genome)  # Clients not in genome
 
         # Remove random clients from the genome
