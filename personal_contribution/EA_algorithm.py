@@ -14,7 +14,7 @@ from utils.checkpointing_utils import save_checkpoint, load_checkpoint,delete_ex
 #constants
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 CRITERION = nn.NLLLoss()
-MOMENTUM = 0.9 
+MOMENTUM = 0
 BATCHSIZE = 64 
 TOTAL_CLIENTS = 100
 CHECKPOINTING_PATH = '../checkpoints/'

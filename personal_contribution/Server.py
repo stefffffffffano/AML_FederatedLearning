@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader, Subset
 from copy import deepcopy
 import numpy as np
 import logging
+import random
 
 from Client import Client
 
@@ -120,74 +121,59 @@ class Server:
         if not (1 <= number_of_classes <= 100):
             raise ValueError("number_of_classes should be an integer between 1 and 100")
 
-        # Shuffle dataset indices for randomness
-        indices = np.random.permutation(len(dataset))
+        # Get labels for sorting
+        labels = np.array([dataset[i][1] for i in range(len(dataset))]) 
+        TOTAL_NUM_CLASSES = len(set(labels))
 
-        if number_of_classes == 100:  # IID Case
-            # Equally distribute indices among clients: we can just randomly assign an equal number of records to each client
-            
-            # Compute basic partition sizes
-            basic_partition_size = len(dataset) // number_of_clients
-            remainder = len(dataset) % number_of_clients
-
-            shards = []  # This will hold the final dataset shards
-            start_idx = 0
-
-            for i in range(number_of_clients):
-                end_idx = start_idx + basic_partition_size + (1 if i < remainder else 0)
-                shards.append(Subset(dataset, indices[start_idx:end_idx]))
-                start_idx = end_idx
-            return shards
-
-        else:  # non-IID Case
-            # Get labels for sorting
-            labels = np.array([dataset[i][1] for i in range(len(dataset))]) 
-            TOTAL_NUM_CLASSES = len(set(labels))
-
-            shard_size = len(dataset) // (number_of_clients * number_of_classes)  # Shard size for each class per client
-            print("dataset len: ", len(dataset), ", shard size: ", shard_size, ", number of shards: ",(number_of_clients * number_of_classes))
-            if shard_size == 0:
-                raise ValueError("Shard size is too small; increase dataset size or reduce number of clients/classes.")
+        shard_size = len(dataset) // (number_of_clients * number_of_classes)  # Shard size for each class per client
+        #print("dataset len: ", len(dataset), ", shard size: ", shard_size, ", number of shards: ",(number_of_clients * number_of_classes))
+        if shard_size == 0:
+            raise ValueError("Shard size is too small; increase dataset size or reduce number of clients/classes.")
 
 
-            # Divide the dataset into shards, each containing samples from one class
-            shards = {}
-            for i in range(TOTAL_NUM_CLASSES):  
-                # Filter samples for the current class
-                class_samples = [j for j in range(len(labels)) if labels[j] == i]
-                shards_of_class_i = []
-                # While there are enough samples to form a shard
-                while len(class_samples) >= shard_size:
-                    # Take a shard of shard_size samples
-                    shards_of_class_i.append(class_samples[:shard_size])
-                    # Remove the shard_size samples from class_samples
-                    class_samples = class_samples[shard_size:]
-                # Add the last shard (which might be smaller than shard_size)
-                if class_samples:
-                    shards_of_class_i.append(class_samples)
-                # Store the class shards
-                shards[i] = shards_of_class_i  # Store shards by class
+        # Divide the dataset into shards, each containing samples from one class
+        shards = {}
+        for i in range(TOTAL_NUM_CLASSES):  
+            # Filter samples for the current class
+            class_samples = [j for j in range(len(labels)) if labels[j] == i]
+            shards_of_class_i = []
+            # While there are enough samples to form a shard
+            while len(class_samples) >= shard_size and len(shards_of_class_i) < number_of_clients*(number_of_classes/number_of_clients):
+                # Take a shard of shard_size samples
+                shards_of_class_i.append(class_samples[:shard_size])
+                # Remove the shard_size samples from class_samples
+                class_samples = class_samples[shard_size:]
+            # Add the last shard (which might be smaller than shard_size)
+            if len(class_samples) > 0 and len(shards_of_class_i) == number_of_clients*(number_of_classes/number_of_clients):
+                # Distribute remaining samples among existing shards
+                for sample in class_samples:
+                    random_shard = random.choice(shards_of_class_i)
+                    random_shard.append(sample)
+            elif class_samples:
+                shards_of_class_i.append(class_samples)
+            # Store the class shards
+            shards[i] = shards_of_class_i  # Store shards by class
         
-            client_shards = []  # List to store the dataset for each client          
-            for client_id in range(number_of_clients):
+        client_shards = []  # List to store the dataset for each client          
+        for client_id in range(number_of_clients):
                 
-                client_labels = [label % TOTAL_NUM_CLASSES for label in range(client_id, client_id + number_of_classes)]
-                #print(client_labels)
+            client_labels = [label % TOTAL_NUM_CLASSES for label in range(client_id, client_id + number_of_classes)]
+            #print(client_labels)
 
-                # Collect the shards for the selected classes
-                client_shard_indices = []
-                for label in client_labels:
-                    shard = shards[label].pop(0)  # Pop the first shard from the class's shard list
-                    client_shard_indices.append(shard)
+            # Collect the shards for the selected classes
+            client_shard_indices = []
+            for label in client_labels:
+                shard = shards[label].pop(0)  # Pop the first shard from the class's shard list
+                client_shard_indices.append(shard)
 
-                # Flatten and combine the shard indices into one list
-                client_indices = [idx for shard in client_shard_indices for idx in shard]
+            # Flatten and combine the shard indices into one list
+            client_indices = [idx for shard in client_shard_indices for idx in shard]
 
-                #print(f"Client {client_id} has {len(client_indices)} samples divided in {len(client_shard_indices)} shards (classes).")
-                # Create a Subset for the client
-                client_dataset = Subset(dataset, client_indices)
-                client_shards.append(client_dataset)
-
-            return client_shards  # Return the list of dataset subsets (shards) for each client
+            #print(f"Client {client_id} has {len(client_indices)} samples divided in {len(client_shard_indices)} shards (classes).")
+            # Create a Subset for the client
+            client_dataset = Subset(dataset, client_indices)
+            client_shards.append(client_dataset)
+        
+        return client_shards  # Return the list of dataset subsets (shards) for each client
         
     
