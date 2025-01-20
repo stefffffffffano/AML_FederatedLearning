@@ -19,10 +19,31 @@ BATCHSIZE = 64
 TOTAL_CLIENTS = 100
 CHECKPOINTING_PATH = '../checkpoints/'
 
-def tournament_selection(population, tau=2, p_diver=0.05):
+def tournament_selection_weakest(population, tau=2, p_diver=0.05):
+    """
+    Perform tournament selection to choose parents.
+    Randomly select tau individuals and choose the weakest one.
+    Fitness hole to introduce a 5% probability of choosing the fittest individual.
+
+
+    :param population: List of Individuals.
+    :param tau: Number of individuals to select.
+    :param p_diver: Probability of choosing the worst individual in the tournament, done for the fitness hole.
+    :return: Selected Individual.
+    """
+    participants = random.sample(population, tau)
+    if random.random() < p_diver:
+        winner = max(participants, key=lambda ind: ind.fitness)
+    else:
+      winner = min(participants, key=lambda ind: ind.fitness)
+    return deepcopy(winner)
+
+
+def tournament_selection_fittest(population, tau=2, p_diver=0.05):
     """
     Perform tournament selection to choose parents.
     Randomly select tau individuals and choose the best one.
+    Fitness hole to introduce a 5% probability of choosing the weakest individual.
 
 
     :param population: List of Individuals.
@@ -158,12 +179,12 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
         for j in range(population_size-1):
             # Crossover
             if random.random() < crossover_probability:
-                parent1 = tournament_selection(population)
-                parent2 = tournament_selection(population)
+                parent1 = tournament_selection_fittest(population)
+                parent2 = tournament_selection_fittest(population)
                 offspring.append(Individual.crossover(parent1, parent2))
             else:
                 #Mutation
-                parent = tournament_selection(population)
+                parent = tournament_selection_weakest(population)
                 parent.mutation()
                 offspring.append(parent)
 
