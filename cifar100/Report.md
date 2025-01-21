@@ -17,26 +17,17 @@ The same grid of values is used for hyperparameter tuning in all the experiments
 
 For the centralized version on CIFAR-100, we obtained the best accuracy with lr = 0.01, wd = 0.001 and cosine annealing as scheduler. We report here training and validation accuracy for this specific setting after 200 epochs:  
 
-![alt text](plots_centralized/CentralizedCifar_accuracy.png)
+![Training and validation accuracies](plots_centralized/CentralizedCifar_accuracy.png)
 
 We reached, with this configuration, an accuracy of 55.65%, but with this high number of epochs the model clearly started to overfit.
 
 Here we show also train and validation losses:  
 
-![alt text](plots_centralized/CentralizedCifar_loss.png)    
+![Training and validation losses](plots_centralized/CentralizedCifar_loss.png)    
 
 We notice that the model is clearly overfitting towards the end of the training, we could have trained for less epochs.
 
-# Federated CIFAR-100
 
-
-For the federated setting, the tests for hyperparamter tuning brought us to this configuration: lr=0.1 and wd = 0.001, reaching a final accuracy of 47.81%. Here we report training and validation accuracies over 2000 rounds:  
-
-![alt text](images_report/image-2.png)  
-
-While here are the losses:    
-
-![alt text](images_report/image-3.png)
 
 # Evaluate the effect of client participation
 We implemented a skewed client sampling: each client has a different probability of being selected at each round, and can be used to simulate settings in which some clients are more “active” than others. Client selection values are sampled according to a Dirichlet distribution parameterized by an hyperparameter ɣ.
@@ -56,61 +47,61 @@ Let's test what happens with different values of gamma:
 
 # Gamma = 5    
 
-Accuracy reached on the test set after 2000 communication rounds:  43.75%
+Accuracy reached on the test set after 2000 communication rounds:  45.95%
 
-With gamma = 5, the best hyperparameters found are: lr = 0.1 and wd = 0.0001. We found the exact same results for all the other values of gamma, so we won't report them again. The only exception is for gamma = 0.05, where the best wd was equal to 0.001.  
+With gamma = 5 and gamma = 0.5, the best hyperparameters found are: lr = 0.1 and wd = 0.0001. We found the exact same results for all the other values of gamma, except for wd that is equal to 0.001 in the other cases.  
 
 We report here validation and training accuracies for gamma = 5, followed by validation and training loss. Finally, a bar plot reporting the frequency of client selection is also reported. The same order will be followed also for other values of gamma, so it won't be specified again. Comments will follow at the end.    
 
 
-![alt text](images_report/image-4.png)
+![Training and Validation Accuracy](<plots_federated/training/skewed_client_sampling/FederatedGamma5_lr_0.1_wd_0.0001_accuracy.png>)
 
-![alt text](images_report/image-5.png)  
+![Training and Validation Loss](<plots_federated/training/skewed_client_sampling/FederatedGamma5_lr_0.1_wd_0.0001_loss.png>)
 
-![alt text](images_report/image-6.png)  
+![Client selection count](<plots_federated/training/skewed_client_sampling/ClientSelectionGamma5_lr_0.1_wd_0.0001.png>)
 
 
 
 # Gamma = 1    
 
-Accuracy reached on the test set after 2000 communication rounds: 40.93%
+Accuracy reached on the test set after 2000 communication rounds: 41.77%
 
 
-![alt text](images_report/image-7.png)  
+![Training and Validation Accuracy](<plots_federated/training/skewed_client_sampling/FederatedGamma1_lr_0.1_wd_0.001_accuracy.png>)
 
-![alt text](images_report/image-8.png)  
+![Training and Validation Loss](<plots_federated/training/skewed_client_sampling/FederatedGamma1_lr_0.1_wd_0.001_loss.png>)
 
-![alt text](images_report/image-9.png)  
+![Client selection count](<plots_federated/training/skewed_client_sampling/ClientSelectionGamma1_lr_0.1_wd_0.001.png>)
 
  
 
 # Gamma = 0.5  
 
-Accuracy reached on the test set after 2000 communication rounds: 40.01
+Accuracy reached on the test set after 2000 communication rounds: 38.42%
 
-![alt text](images_report/image-10.png)  
+![Training and Validation Accuracy](<plots_federated/training/skewed_client_sampling/FederatedGamma05_lr_0.1_wd_0.0001_accuracy.png>)
 
-![alt text](images_report/image-11.png)   
+![Training and Validation Loss](<plots_federated/training/skewed_client_sampling/FederatedGamma05_lr_0.1_wd_0.0001_loss.png>)
 
-![alt text](images_report/image-12.png)  
+![Client selection count](<plots_federated/training/skewed_client_sampling/ClientSelectionGamma05_lr_0.1_wd_0.0001.png>) 
 
 
 
 
 # Gamma = 0.05  
 
-Accuracy reached on the test set after 2000 communication rounds: 29.02%  
+Accuracy reached on the test set after 2000 communication rounds: 26.47%  
 
 
-![alt text](images_report/image-13.png)  
+![Training and Validation Accuracy](<plots_federated/training/skewed_client_sampling/FederatedGamma005_lr_0.1_wd_0.001_accuracy.png>)
 
-![alt text](images_report/image-14.png)  
+![Training and Validation Loss](<plots_federated/training/skewed_client_sampling/FederatedGamma005_lr_0.1_wd_0.001_loss.png>)
 
-![alt text](images_report/image-15.png)    
+![Client selection count](<plots_federated/training/skewed_client_sampling/ClientSelectionGamma005_lr_0.1_wd_0.001.png>)   
 
 # Comparison  
 
-![alt text](images_report/image-16.png)  
+![Comparison among accuracies](<plots_federated/training/skewed_client_sampling/Comparison.png>)
 
 As we can observe from the plot, the accuracy on the test set decreases with the value of gamma. Obviously, when only a small percentage of clients is selected, the model performs very well on the data of those clients, without being able of generalizing. Basically, the model overfits and, even if data are IID among clients, it doesn't train on sufficiently different examples when gamma is really low (e.g.: gamma = 0.05), but still it is able to perform reasonably good when gamma represents a more real situation (gamma = 1 or gamma = 0.5). The use of gamma = 0.05 was done on purpose to verify what happens in a very edge case, difficult to be produced in reality.   
 
@@ -181,49 +172,49 @@ Each client has approximately the same number of samples belonging to five class
 
 ### \( J = 4 \), 2000 Rounds  
 
-- **Learning Rate (lr):** _0.01_  
-- **Weight Decay (wd):** _0.0001_  
+- **Learning Rate (lr):** _0.05_  
+- **Weight Decay (wd):** _0.001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _28.46 %_  
+- **Accuracy:** _32.16 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<images_report/image-27.png>)
+![Training and Validation Accuracy](<plots_federated/training/non_iid/Federated_num_classes_5_local_steps_4_LR_0.05_WD_0.001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<images_report/image-28.png>)
+![Training and Validation Loss](<plots_federated/training/non_iid/Federated_num_classes_5_local_steps_4_LR_0.05_WD_0.001_loss.png>)
 
 ---
 
 ### \( J = 8 \), 1000 Rounds  
 
-- **Learning Rate (lr):** _0.01_  
-- **Weight Decay (wd):** _0.0001_  
+- **Learning Rate (lr):** _0.05_  
+- **Weight Decay (wd):** _0.001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _28.64 %_  
+- **Accuracy:** _25.47 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<images_report/image-25.png>)
+![Training and Validation Accuracy](<plots_federated/training/non_iid/Federated_num_classes_5_local_steps_8_LR_0.05_WD_0.001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<images_report/image-26.png>)
+![Training and Validation Loss](<plots_federated/training/non_iid/Federated_num_classes_5_local_steps_8_LR_0.05_WD_0.001_loss.png>)
 
 ---
 
 ### \( J = 16 \), 500 Rounds  
 
-- **Learning Rate (lr):** _0.01_  
-- **Weight Decay (wd):** _0.0001_  
+- **Learning Rate (lr):** _0.05_  
+- **Weight Decay (wd):** _0.001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _24.54 %_  
+- **Accuracy:** _22.02 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<images_report/image-23.png>)
+![Training and Validation Accuracy](<plots_federated/training/non_iid/Federated_num_classes_5_local_steps_16_LR_0.05_WD_0.001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<images_report/image-24.png>)
+![Training and Validation Loss](<plots_federated/training/non_iid/Federated_num_classes_5_local_steps_16_LR_0.05_WD_0.001_loss.png>)
 
 ---
 
@@ -233,49 +224,49 @@ Each client has approximately the same number of samples belonging to ten classe
 
 ### \( J = 4 \), 2000 Rounds  
 
-- **Learning Rate (lr):** _0.1_  
+- **Learning Rate (lr):** _0.05_  
 - **Weight Decay (wd):** _0.001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _43.72 %_  
+- **Accuracy:** _37.29 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<images_report/Federated_num_classes_10_local_steps_4_LR_0.1_WD_0.001_accuracy.png>)
+![Training and Validation Accuracy](<plots_federated/training/non_iid/Federated_num_classes_10_local_steps_4_LR_0.05_WD_0.001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<images_report/Federated_num_classes_10_local_steps_4_LR_0.1_WD_0.001_loss.png>)
+![Training and Validation Loss](<plots_federated/training/non_iid/Federated_num_classes_10_local_steps_4_LR_0.05_WD_0.001_loss.png>)
 
 ---
 
 ### \( J = 8 \), 1000 Rounds  
 
-- **Learning Rate (lr):** _0.01_  
+- **Learning Rate (lr):** _0.05_  
 - **Weight Decay (wd):** _0.0001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _31.51 %_  
+- **Accuracy:** _31.94 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<images_report/Federated_num_classes_10_local_steps_8_LR_0.01_WD_0.0001_accuracy.png>)
+![Training and Validation Accuracy](<plots_federated/training/non_iid/Federated_num_classes_10_local_steps_8_LR_0.05_WD_0.0001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<images_report/Federated_num_classes_10_local_steps_8_LR_0.01_WD_0.0001_loss.png>)
+![Training and Validation Loss](<plots_federated/training/non_iid/Federated_num_classes_10_local_steps_8_LR_0.05_WD_0.0001_loss.png>)
 
 ---
 
 ### \( J = 16 \), 500 Rounds  
 
-- **Learning Rate (lr):** _0.01_  
-- **Weight Decay (wd):** _0.001_  
+- **Learning Rate (lr):** _0.05_  
+- **Weight Decay (wd):** _0.0001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _28.16 %_  
+- **Accuracy:** _27.66 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<images_report/Federated_num_classes_10_local_steps_16_LR_0.01_WD_0.001_accuracy.png>)
+![Training and Validation Accuracy](<plots_federated/training/non_iid/Federated_num_classes_10_local_steps_16_LR_0.05_WD_0.0001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<images_report/Federated_num_classes_10_local_steps_16_LR_0.01_WD_0.001_loss.png>)
+![Training and Validation Loss](<plots_federated/training/non_iid/Federated_num_classes_10_local_steps_16_LR_0.05_WD_0.0001_loss.png>)
 
 
 ## Results for \( N_c = 50 \)
@@ -285,48 +276,50 @@ Each client has the same number of samples belonging to fifty classes.
 ### \( J = 4 \), 2000 Rounds  
 
 - **Learning Rate (lr):** _0.1_  
-- **Weight Decay (wd):** _0.001_  
+- **Weight Decay (wd):** _0.0001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _45.53 %_  
+- **Accuracy:** _44.84 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<images_report/Federated_num_classes_50_local_steps_4_LR_0.1_WD_0.0001_accuracy.png>)
+![Training and Validation Accuracy](<plots_federated/training/non_iid/Federated_num_classes_50_local_steps_4_LR_0.1_WD_0.0001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<images_report/Federated_num_classes_50_local_steps_4_LR_0.1_WD_0.0001_loss.png>)
+![Training and Validation Loss](<plots_federated/training/non_iid/Federated_num_classes_50_local_steps_4_LR_0.1_WD_0.0001_loss.png>)
 
 ---
 
 ### \( J = 8 \), 1000 Rounds  
 
 - **Learning Rate (lr):** _0.1_  
-- **Weight Decay (wd):** _0.001_  
+- **Weight Decay (wd):** _0.0001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _42.11 %_  
+- **Accuracy:** _38.76 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<images_report/Federated_num_classes_50_local_steps_8_LR_0.1_WD_0.001_accuracy.png>)
+![Training and Validation Accuracy](<plots_federated/training/non_iid/Federated_num_classes_50_local_steps_8_LR_0.1_WD_0.0001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<images_report/Federated_num_classes_50_local_steps_8_LR_0.1_WD_0.001_loss.png>)
+![Training and Validation Loss](<plots_federated/training/non_iid/Federated_num_classes_50_local_steps_8_LR_0.1_WD_0.0001_loss.png>)
+
 
 ---
 
 ### \( J = 16 \), 500 Rounds  
 
-- **Learning Rate (lr):** _0.01_  
+- **Learning Rate (lr):** _0.05_  
 - **Weight Decay (wd):** _0.0001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _38.49 %_  
+- **Accuracy:** _32.94 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<images_report/Federated_num_classes_50_local_steps_16_LR_0.01_WD_0.0001_accuracy.png>)
+![Training and Validation Accuracy](<plots_federated/training/non_iid/Federated_num_classes_50_local_steps_16_LR_0.05_WD_0.0001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<images_report/Federated_num_classes_50_local_steps_16_LR_0.01_WD_0.0001_loss.png>)
+![Training and Validation Loss](<plots_federated/training/non_iid/Federated_num_classes_50_local_steps_16_LR_0.05_WD_0.0001_loss.png>)
+
 
 ---
 
@@ -343,10 +336,10 @@ Clients receive an IID distribution of the data.
 - **Accuracy:** _45.96 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<plots_federated/Federated_num_classes_100_local_steps_4_LR_0.1_WD_0.0001_accuracy.png>)
+![Training and Validation Accuracy](<plots_federated/training/iid/Federated_num_classes_100_local_steps_4_LR_0.1_WD_0.0001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<plots_federated/Federated_num_classes_100_local_steps_4_LR_0.1_WD_0.0001_loss.png>)
+![Training and Validation Loss](<plots_federated/training/iid/Federated_num_classes_100_local_steps_4_LR_0.1_WD_0.0001_loss.png>)
 
 ---
 
@@ -356,26 +349,26 @@ Clients receive an IID distribution of the data.
 - **Weight Decay (wd):** _0.0001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _40.9 %_  
+- **Accuracy:** _43.81 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<plots_federated/Federated_num_classes_100_local_steps_8_LR_0.1_WD_0.0001_accuracy.png>)
+![Training and Validation Accuracy](<plots_federated/training/iid/Federated_num_classes_100_local_steps_8_LR_0.1_WD_0.0001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<plots_federated/Federated_num_classes_100_local_steps_8_LR_0.1_WD_0.0001_loss.png>)
+![Training and Validation Loss](<plots_federated/training/iid/Federated_num_classes_100_local_steps_8_LR_0.1_WD_0.0001_loss.png>)
 
 ---
 
 ### \( J = 16 \), 500 Rounds  
 
-- **Learning Rate (lr):** _0.01_  
-- **Weight Decay (wd):** _0.0001_  
+- **Learning Rate (lr):** _0.05_  
+- **Weight Decay (wd):** _0.001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _39.17 %_  
+- **Accuracy:** _39.42 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<plots_federated/Federated_num_classes_100_local_steps_16_LR_0.01_WD_0.0001_accuracy.png>)
+![Training and Validation Accuracy](<plots_federated/training/iid/Federated_num_classes_100_local_steps_16_LR_0.05_WD_0.001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<plots_federated/Federated_num_classes_100_local_steps_16_LR_0.01_WD_0.0001_loss.png>)
+![Training and Validation Loss](<plots_federated/training/iid/Federated_num_classes_100_local_steps_16_LR_0.05_WD_0.001_loss.png>)

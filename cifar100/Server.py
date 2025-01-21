@@ -11,7 +11,7 @@ import logging
 from Client import Client
 from utils.utils import evaluate
 from utils.checkpointing_utils import save_checkpoint, load_checkpoint
-from cifar100.utils.plotting_utils import plot_local_data_distribution
+from utils.plotting_utils import plot_local_data_distribution
 
 
 log = logging.getLogger(__name__)
