@@ -27,7 +27,7 @@ The model was borrowed from "Adaptive Federated Optimization" [2].
 - **Fully Connected Output Layer**: Maps the output of the last LSTM layer to a vector with a size equal to the vocabulary, representing the probability distribution over possible next characters.
 
 ### Model Specifications
-- **Vocabulary Size**: 70 (characters in the dataset)
+- **Vocabulary Size**: number of characters in the dataset
 - **Embedding Size**: 8
 - **LSTM Hidden Dimension**: 256
 - **Sequence Length**: 80 (characters)
