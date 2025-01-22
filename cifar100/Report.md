@@ -120,49 +120,49 @@ Each client has approximately the same number of samples belonging to one class 
 
 ### \( J = 4 \), 2000 Rounds  
 
-- **Learning Rate (lr):** _0.01_  
-- **Weight Decay (wd):** _0.01_  
+- **Learning Rate (lr):** _0.005_  
+- **Weight Decay (wd):** _0.0001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _6.6 %_  
+- **Accuracy:** _7.31 %_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<images_report/image-21.png>)
+![Training and Validation Accuracy](<plots_federated/training/non_iid/Federated_num_classes_1_local_steps_4_LR_0.005_WD_0.0001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<images_report/image-22.png>)
+![Training and Validation Loss](<plots_federated/training/non_iid/Federated_num_classes_1_local_steps_4_LR_0.005_WD_0.0001_loss.png>)
 
 ---
 
 ### \( J = 8 \), 1000 Rounds  
 
-- **Learning Rate (lr):** _0.001_  
-- **Weight Decay (wd):** _0.01_  
+- **Learning Rate (lr):** _0.005_  
+- **Weight Decay (wd):** _0.001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _4.26%_  
+- **Accuracy:** _3.23%_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](<images_report/image-19.png>)
+![Training and Validation Accuracy](<plots_federated/training/non_iid/Federated_num_classes_1_local_steps_8_LR_0.005_WD_0.001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](<images_report/image-20.png>)
+![Training and Validation Loss](<plots_federated/training/non_iid/Federated_num_classes_1_local_steps_8_LR_0.005_WD_0.001_loss.png>)
 
 ---
 
 ### \( J = 16 \), 500 Rounds  
 
-- **Learning Rate (lr):** _0.001_  
+- **Learning Rate (lr):** _0.01_  
 - **Weight Decay (wd):** _0.001_  
 
 **Test Set Performance**:  
-- **Accuracy:** _4.39%_  
+- **Accuracy:** _2.76%_  
 
 #### Training and Validation Accuracy  
-![Training and Validation Accuracy](images_report/image-17.png)
+![Training and Validation Accuracy](<plots_federated/training/non_iid/Federated_num_classes_1_local_steps_16_LR_0.01_WD_0.001_accuracy.png>)
 
 #### Training and Validation Loss  
-![Training and Validation Loss](images_report/image-18.png)
+![Training and Validation Loss](<plots_federated/training/non_iid/Federated_num_classes_1_local_steps_16_LR_0.01_WD_0.001_loss.png>)
 
 ---
 
