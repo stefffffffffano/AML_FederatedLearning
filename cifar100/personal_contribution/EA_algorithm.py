@@ -1,6 +1,7 @@
 import random
 from copy import deepcopy
 import os
+import sys
 
 import torch
 import torch.nn as nn
@@ -8,6 +9,7 @@ import torch.nn as nn
 from Individual import Individual
 from models.model import LeNet5
 from Server import Server
+sys.path.append('../')
 from utils.utils import evaluate
 from utils.checkpointing_utils import save_checkpoint, load_checkpoint,delete_existing_checkpoints
 
@@ -164,7 +166,7 @@ def EA_algorithm(generations,population_size,num_clients,num_classes,crossover_p
         model.load_state_dict(averaged_model)
 
         # Then evaluate the validation accuracy of the global model
-        acc, loss = evaluate(model, valid_loader, CRITERION)
+        acc, loss = evaluate(model, valid_loader)
         if acc > best_val_acc:
                 best_val_acc = acc
                 best_model_state = deepcopy(model.state_dict())
