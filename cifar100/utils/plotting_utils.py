@@ -58,7 +58,7 @@ def plot_local_data_distribution(client_dataset, dir_name, file_name):
 
     # Plot the histogram
     plt.figure(figsize=(10, 6))
-    plt.bar(class_labels, frequencies, color='blue', edgecolor='black')
+    plt.bar(class_labels, frequencies)
     plt.title('Class Distribution in Local Dataset', fontsize=16)
     plt.xlabel('Class', fontsize=14)
     plt.ylabel('Frequency', fontsize=14)
