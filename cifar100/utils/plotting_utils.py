@@ -35,18 +35,17 @@ def plot_client_selection(client_selection_count, file_name):
 
 def plot_local_data_distribution(client_dataset, dir_name, file_name):
     """
-    Plots the distribution of classes in a client's local dataset and saves the figure.
-
+    Plots the distribution of classes in a client's local dataset and ensures all 100 classes are displayed.
+    
     Args:
         client_dataset: Dataset object containing (data, label) tuples.
+        dir_name: Directory name for saving the plot.
         file_name: Name of the file to save the plot.
     """
     # Fixed base directory
-    directory =  './plots_federated/data_sharding_distributions/cifar100'+ '_' + dir_name
-    # Ensure the base directory exists
-    os.makedirs(directory, exist_ok=True)
-    # Complete path for the file
-    file_path = os.path.join(directory, file_name)
+    directory = './plots_federated/data_sharding_distributions/cifar100' + '_' + dir_name
+    os.makedirs(directory, exist_ok=True)  # Ensure the base directory exists
+    file_path = os.path.join(directory, file_name)  # Complete path for the file
 
     # Extract labels from the Subset dataset
     base_dataset = client_dataset.dataset
@@ -56,18 +55,27 @@ def plot_local_data_distribution(client_dataset, dir_name, file_name):
     # Count occurrences of each class
     class_labels, frequencies = np.unique(labels, return_counts=True)
 
+    # Create an array for all 100 classes with zero counts
+    total_classes = 100
+    all_frequencies = np.zeros(total_classes, dtype=int)
+    
+    # Fill in the counts for existing classes
+    all_frequencies[class_labels] = frequencies
+
     # Plot the histogram
-    plt.figure(figsize=(10, 6))
-    plt.bar(class_labels, frequencies)
+    plt.figure(figsize=(12, 6))
+    bars = plt.bar(range(total_classes), all_frequencies, alpha=0.7, color='C0', edgecolor='black')
+
+    # Formatting
     plt.title('Class Distribution in Local Dataset', fontsize=16)
     plt.xlabel('Class', fontsize=14)
     plt.ylabel('Frequency', fontsize=14)
-    plt.xticks(class_labels, rotation=45)
+    plt.xticks(range(total_classes), rotation=90, fontsize=8)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
     # Save the plot
     plt.tight_layout()
-    plt.savefig(file_path)
+    plt.savefig(file_path, format="png", dpi=300)
     plt.close()
 
     print(f"Plot saved to {file_path}")
