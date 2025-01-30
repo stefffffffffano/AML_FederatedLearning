@@ -6,7 +6,7 @@ The Shakespeare dataset used in this project is tailored for federated learning 
 
 The dataset was borrowed from the Leaf project[1].
 
-**DATASET Creation**
+# DATASET Creation
 
 1. Go to the preprocessing directory:  
    `cd LEAF_data/shakespeare/preprocess`
