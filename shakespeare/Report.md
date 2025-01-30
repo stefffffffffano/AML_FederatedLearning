@@ -6,6 +6,19 @@ The Shakespeare dataset used in this project is tailored for federated learning 
 
 The dataset was borrowed from the Leaf project[1].
 
+**DATASET Creation**
+
+1. Go to the preprocessing directory:  
+   `cd LEAF_data/shakespeare/preprocess`
+2. Execute the script to convert data to JSON format:  
+   `./data_to_json.sh`
+3. Return to the parent directory:  
+   `cd ..`
+4. Create your dataset by following the guides in the readme located in the `LEAF_data/shakespeare` folder. For example, the following command:  
+   `./preprocess.sh -s niid --sf 0.16 -k 0 -t sample -tf 0.8`  
+   will create a dataset for the NIID case with 100 devices.
+
+
 ### Data Structure
 - **users**: Unique identifiers for different characters from various plays who have dialogue.
 - **num_samples**: The number of samples (lines of text) corresponding to each user.
