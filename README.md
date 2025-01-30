@@ -26,8 +26,8 @@ The repository is structured into two main dataset-specific directories:
 - `Server.py` → Server-side logic for FL  
 - `federated_notebook.ipynb` → Jupyter notebook for FL experiments  
 - `train_centralized.ipynb` → Jupyter notebook for centralized experiments  
-- `Report.md` → Detailed results and analysis  
-- `personal_contribution/` → **Implementation of Evolutionary Algorithms (EA) for client selection (Jupyter notebook: `Experiments.ipynb`)**  
+- `Report.md` → Detailed results and analysis on centralized and federated baseline configurations 
+- `personal_contribution/` → **Implementation of Evolutionary Algorithms (EA) for client selection** with experiment result (`plots_federated`) and Jupyter notebook (`Experiments.ipynb`)
 
 ### 🔹 `shakespeare/`  
 - `LEAF_data/` → Dataset preprocessing scripts from **LEAF Benchmark**  
@@ -38,8 +38,8 @@ The repository is structured into two main dataset-specific directories:
 - `Model.py` → LSTM model for character prediction  
 - `Centralized_Shakespeare.ipynb` → Centralized experiments  
 - `Federated_Shakespeare.ipynb` → Federated experiments  
-- `Report.md` → Results and insights  
-- `personal_contribution/` → **Implementation of Evolutionary Algorithms (EA) for client selection (Jupyter notebook: `Experiments.ipynb`)**  
+- `Report.md` → Datase6 creation and architecture details  
+- `personal_contribution/` → **Implementation of Evolutionary Algorithms (EA) for client selection** with experiment result (`plots_federated`) and Jupyter notebook (`Experiments.ipynb`)
 ---
 
 ## 🎯 Personal Contribution Methodology  
