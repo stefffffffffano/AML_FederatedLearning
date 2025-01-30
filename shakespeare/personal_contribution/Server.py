@@ -12,13 +12,11 @@ from torch.nn.utils.rnn import pad_sequence
 log = logging.getLogger(__name__)
 
 class Server:
-    def __init__(self, global_model, device, char_to_idx, CHECKPOINT_DIR):
+    def __init__(self, global_model, device, char_to_idx):
         self.global_model = global_model
         self.device = device
         self.char_to_idx = char_to_idx
-        self.CHECKPOINT_DIR = CHECKPOINT_DIR
         # Ensure the checkpoint directory exists, creating it if necessary
-        os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 
     def fedavg_aggregate(self, client_states, client_sizes, client_avg_losses, client_avg_accuracies):
         """
