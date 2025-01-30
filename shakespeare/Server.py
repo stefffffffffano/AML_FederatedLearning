@@ -271,18 +271,11 @@ class Server:
                     print(f"-->training accuracy: {train_accuracy:.2f}")
                     print(f"-->training loss: {train_loss:.4f}")
 
-                # checkpointing
-                checkpoint_data = {
-                    'train_accuracies': train_accuracies,
-                    'train_losses': train_losses,
-                    'client_selection_count': client_selection_count
-                }
-                self.save_checkpoint(self.global_model,optimizer=None, epoch=round_num, hyperparameters=f"LR{lr}_WD{wd}", subfolder="Federated/", checkpoint_data=checkpoint_data)
+                
                 if detailed_print:
                     print(f"------------------------------ Round {round_num+1} terminated: model updated -----------------------------\n\n" )
 
-        self.global_model.load_state_dict(best_model_state)
-
+        
         return self.global_model, train_accuracies, train_losses, client_selection_count
 
     def skewed_probabilities(self, number_of_clients, gamma=0.5):
