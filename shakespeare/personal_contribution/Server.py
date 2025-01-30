@@ -91,7 +91,7 @@ class Server:
             optimizer = optim.SGD(local_model.parameters(), lr=lr, momentum=momentum, weight_decay=wd) #same of the centralized version
             client_loader = DataLoader(shards[client_id], batch_size=batchsize, shuffle=True)
 
-            client = Client(client_id, client_loader, local_model, self.device)
+            client = Client(client_id, client_loader, local_model, self.device, self.char_to_idx)
             client_local_state, client_avg_loss, client_avg_accuracy  = client.client_update(client_loader, criterion, optimizer, local_steps)
 
             client_states.append(client_local_state)
