@@ -1,8 +1,8 @@
-# Optimizing Client Selection in Federated Learning with Evolutionary Algorithms  
+# Federated Learning Project: Optimizing Client Selection with Evolutionary Algorithms  
 
 ## 📖 Overview  
 
-Federated Learning (FL) is a decentralized approach to machine learning where models are trained across multiple devices while keeping data localized. This project investigates **client selection strategies** in FL using **Evolutionary Algorithms (EAs)** to improve convergence and reduce communication overhead.  
+Federated Learning (FL) is a decentralized machine learning approach where multiple devices train a shared model without exchanging local data. This project explores **client selection strategies** using **Evolutionary Algorithms (EAs)** to analyze their impact on model convergence and communication efficiency, comparing them with baseline methods.  
 
 We conduct experiments on **two datasets**:  
 - 📸 **CIFAR-100** – Image classification task  
@@ -38,7 +38,7 @@ The repository is structured into two main dataset-specific directories:
 - `Model.py` → LSTM model for character prediction  
 - `Centralized_Shakespeare.ipynb` → Centralized experiments  
 - `Federated_Shakespeare.ipynb` → Federated experiments  
-- `Report.md` → Datase6 creation and architecture details  
+- `Report.md` → **Dataset creation information** and architecture details  
 - `personal_contribution/` → **Implementation of Evolutionary Algorithms (EA) for client selection** with experiment result (`plots_federated`) and Jupyter notebook (`Experiments.ipynb`)
 ---
 
@@ -46,7 +46,7 @@ The repository is structured into two main dataset-specific directories:
 
 We propose an **evolutionary-based client selection strategy** to tackle statistical and system heterogeneity in FL.  
 
-### ⚡ **Key Contributions**  
+ **Key Contributions:**  
 ✅ **Adaptive Client Selection**: Using EAs to select high-loss clients for better model convergence  
 ✅ **Fairness Considerations**: Ensuring diverse client participation without exposing private data  
 
@@ -54,36 +54,30 @@ We propose an **evolutionary-based client selection strategy** to tackle statist
 
 ## 📊 Experimental Setup  
 
-### 📌 **Datasets**  
+### 🗄 **Datasets**  
 1️⃣ **CIFAR-100**: Standard image classification dataset  
 2️⃣ **Shakespeare** (from [LEAF Benchmark](https://leaf.cmu.edu/)): Character-level text prediction  
 
 ### 🏗 **Federated Learning Setup**  
-- **Client-Server Architecture** with multiple clients updating local models  
-- **Heterogeneous Data Distribution** simulating real-world FL scenarios  
-- **Comparison with Baseline Strategies**:  
-  - Random client selection  
-  - Uniform sampling  
-  - Proposed **EA-based selection**  
+- **Client-Server Architecture** with multiple clients training local models  
+- **Heterogeneous Data Distribution** to simulate real-world FL scenarios  
+- **Client Selection Strategies**:  
+  - Baseline methods (Random selection, Uniform sampling)  
+  - **Evolutionary Algorithm (EA)-based selection** for adaptive client participation  
+- **Impact of Skewed Client Participation**:  
+  - Clients selected with probabilities drawn from a **Dirichlet distribution** (γ-controlled heterogeneity)  
+  - Analysis of test accuracy degradation under different γ values  
+
+### 🔄 **Impact of Local Updates (J) and Communication Rounds**  
+- **Evaluation under different numbers of local steps (J)**  
+  - Trade-off analysis between local model drift and communication frequency  
+  - Scaling rounds to balance global updates vs. local training  
+  - Effect of J on CIFAR-100 and Shakespeare datasets  
 
 ### 🔧 **Hyperparameter Tuning**  
-- Different **learning rates (lr)**, **weight decays (wd)**, and **schedulers**  
-- Details available in `Report.md`  
-
----
-
-## 📈 Results  
-
-🔹 **Federated vs. Centralized Performance**  
-- Evaluated model accuracy & loss trends for different settings  
-- Comparison of FL client selection strategies  
-
-🔹 **Impact of Client Selection**  
-- Improved convergence speed with EA-based selection  
-- Better utilization of computational resources  
-
-🔹 **Plots & Visualizations**  
-- Accuracy & loss curves saved in `plots_federated/` and `plots_centralized/`  
+- **CIFAR-100**: Grid search on **learning rates, weight decays, and schedulers** (Only for Centralized version: StepLR, Cosine Annealing, Exponential LR)  
+- **Shakespeare**: Preprocessing and tuning based on **LEAF Benchmark** and literature guidelines  
+- **EA-based selection**: Hyperparameter tuning on **crossover probabilities**  
 
 ---
 
@@ -91,8 +85,8 @@ We propose an **evolutionary-based client selection strategy** to tackle statist
 
 ### 🔹 **1. Clone the repository**  
 ```bash
-git clone https://github.com/your-repo.git
-cd your-repo
+git clone https://github.com/stefffffffffano/AML_FederatedLearning.git
+cd AML_FederatedLearning
 ```
 
 ### 🔹 **2. Set up the environment**  
@@ -112,6 +106,10 @@ pip install -r requirements.txt
   ```bash
   jupyter notebook cifar100/federated_notebook.ipynb
   ```
+- **Personal Contribution (EA-based Client Selection) Notebook:**  
+  ```bash
+  jupyter notebook personal_contribution/Experiments.ipynb
+  ```
 
 #### 🎭 Shakespeare  
 - **Centralized Training:**  
@@ -122,21 +120,10 @@ pip install -r requirements.txt
   ```bash
   jupyter notebook shakespeare/Federated_Shakespeare.ipynb
   ```
-
----
-
-## 📚 References  
-
-1️⃣ **LEAF Benchmark**: Caldas, Sebastian, et al. *"Leaf: A benchmark for federated settings."* arXiv preprint arXiv:1812.01097 (2018).  
-2️⃣ **Federated Optimization**: Reddi, Sashank, et al. *"Adaptive Federated Optimization."* 2021.  
-
----
-
-## 🎯 Future Work  
-
-🔹 Apply the method to **more complex datasets**  
-🔹 Extend selection strategies with **reinforcement learning**  
-🔹 Optimize for **mobile and edge computing** scenarios  
+- **Personal Contribution (EA-based Client Selection) Notebook:**  
+  ```bash
+  jupyter notebook personal_contribution/Experiments.ipynb
+  ```
 
 ---
 
@@ -146,12 +133,12 @@ Contributions are welcome! Feel free to fork the repo and submit pull requests. 
 
 ---
 
-## 🛠 Contact  
+## 📬 Contact  
 
 **Authors:**  
-- 🧑‍💻 Luca Dadone  
-- 🧑‍💻 Stefano Fumero  
-- 🧑‍💻 Andrea Mirenda  
+- 🧑‍💻 [Luca Dadone](https://github.com/dadoluca) 
+- 🧑‍💻 [Stefano Fumero ](https://github.com/stefffffffffano) 
+- 🧑‍💻 [Andrea Mirenda](https://github.com/Andrea-1704) 
 
-📩 For any inquiries, please reach out to the authors.  
+For any inquiries, please reach out to the authors.  
 
