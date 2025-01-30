@@ -1,4 +1,5 @@
-# AML_FederatedLearning
+# Optimizing Client Selection in Federated Learning with
+Evolutionary Algorithms
 Project work for the course of advanced machine learning, year 2024/2025.   
 
 Authors: 
@@ -9,10 +10,12 @@ Authors:
 
 
 The focus of the project is Federated Learning with many experiments, run both on the centralized and federated setting, for the CIFAR-100 and Shakespeare datasets.  
+PERSONAL CONTRIBUTION !!!!!!!
 
 
-The repo is organized in 3 main folders: data, cifar100 and shakespeare.  
-In data, you can find the data loaders for the two aforementioned datasets, while, in cifar-100 and shakespeare, there is the code related to the experiments on the two datasets.  
+The repo is organized in 2 main folders:  cifar100 and shakespeare.  
+ in cifar-100 and shakespeare, there is the code related to the experiments on the two datasets.  
+in cifar 100 in data, you can find the data loader
 
 In particular, all the functions used have been modularized following a similar logic for both the datasets. For the federated setting, a Client and a Server class have been created to manage client update, client selection and sharding. In the utilities, you can find other useful functions to manage checkpointing (to restart executions on Colab when stopped), for plotting results and saving data. In particular, for cifar100, for instance, in federated_utils there is a function that stores models, train and validation accuracies and train and validation losses. This allowed us not to repeat the training when further considerations were needed.  
 
