@@ -63,22 +63,13 @@ class Client:
                 targets_flat = targets.view(-1)
                 loss = criterion(output_flat, targets_flat)
 
-                # Backward pass: compute gradients
                 loss.backward()
+                
 
                 # Update model parameters
                 optimizer.step()
 
-                # Compute the loss
-                # loss = criterion(outputs, targets)
-
-                # # Backward pass: compute gradients and update weights
-                # loss.backward()
-                # optimizer.step()
-
-                #---------- Accumulate metrics
-                #  Accumulates the weighted loss for the number of samples in the batch to account for any variation in
-                #  batch size due to, for example, the smaller final batch. A little too precise? :)
+               
                 total_loss += loss.item() * data.size(0)
                 _, predicted = output_flat.max(1)
                 correct_predictions += predicted.eq(targets).sum().item()

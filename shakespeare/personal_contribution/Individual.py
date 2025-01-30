@@ -22,12 +22,12 @@ class Individual:
         """
         self.fitness = fitness_value
 
-    def point_mutation(self):
+    def mutation(self):
         """
-        Mutate the genome by changing 1 client randomly.
+        Mutate the genome by changing clients randomly.
         Ensures that the selected clients remain disjoint.
         """
-        num_changes = self.number_selected_clients  # Number of mutations
+        num_changes = random.randint(self.number_selected_clients-1,self.number_selected_clients)  # Number of mutations
         available_clients = set(range(self.total_clients)) - set(self.genome)  # Clients not in genome
 
         # Remove random clients from the genome
@@ -38,7 +38,7 @@ class Individual:
         # Add new random clients from the available set
         to_add = random.sample(list(available_clients), k=num_changes)
         self.genome.extend(to_add)
-
+        
     @staticmethod
     def crossover(parent1, parent2):
         """
