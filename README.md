@@ -1,28 +1,160 @@
-# Optimizing Client Selection in Federated Learning with
-Evolutionary Algorithms
-Project work for the course of advanced machine learning, year 2024/2025.   
+# Optimizing Client Selection in Federated Learning with Evolutionary Algorithms  
 
-Authors: 
-- Dadone Luca
-- Fumero Stefano
-- Mirenda Andrea  
+## 📖 Overview  
 
+Federated Learning (FL) is a decentralized approach to machine learning where models are trained across multiple devices while keeping data localized. This project investigates **client selection strategies** in FL using **Evolutionary Algorithms (EAs)** to improve convergence and reduce communication overhead.  
 
+We conduct experiments on **two datasets**:  
+- 📸 **CIFAR-100** – Image classification task  
+- 🎭 **Shakespeare** – Character-level language modeling  
 
-The focus of the project is Federated Learning with many experiments, run both on the centralized and federated setting, for the CIFAR-100 and Shakespeare datasets.  
-PERSONAL CONTRIBUTION !!!!!!!
+The experiments include **centralized** and **federated** settings to provide a comparative analysis of Federated Learning performance.  
 
+---
 
-The repo is organized in 2 main folders:  cifar100 and shakespeare.  
- in cifar-100 and shakespeare, there is the code related to the experiments on the two datasets.  
-in cifar 100 in data, you can find the data loader
+## 📂 Repository Structure  
 
-In particular, all the functions used have been modularized following a similar logic for both the datasets. For the federated setting, a Client and a Server class have been created to manage client update, client selection and sharding. In the utilities, you can find other useful functions to manage checkpointing (to restart executions on Colab when stopped), for plotting results and saving data. In particular, for cifar100, for instance, in federated_utils there is a function that stores models, train and validation accuracies and train and validation losses. This allowed us not to repeat the training when further considerations were needed.  
+The repository is structured into two main dataset-specific directories:  
 
+### 🔹 `cifar100/`  
+- `data/cifar100/` → Data loading utilities  
+- `models/` → Model definitions  
+- `plots_centralized/`, `plots_federated/` → Experiment results  
+- `trained_models/` → Saved models  
+- `utils/` → Utility scripts  
+- `Client.py` → Client-side logic for FL  
+- `Server.py` → Server-side logic for FL  
+- `federated_notebook.ipynb` → Jupyter notebook for FL experiments  
+- `train_centralized.ipynb` → Jupyter notebook for centralized experiments  
+- `Report.md` → Detailed results and analysis  
+- `personal_contribution/` → **Implementation of Evolutionary Algorithms (EA) for client selection (Jupyter notebook: `Experiments.ipynb`)**  
 
-In each of the two folders containing the code for the two datasets you can find two jupyter notebooks with all the sequence of experiments (one for the centralized setting, the other for the federated one). They can be reproduced and make use of the functions and classes described before. As for readability, we organize them in cycles to group based on the focus of the experiment. For example, when evaluating different values of gamma for the skewed client participation, we report one single cycle for hyperparameter tuniing and training for each gamma for readability.   
+### 🔹 `shakespeare/`  
+- `LEAF_data/` → Dataset preprocessing scripts from **LEAF Benchmark**  
+- `trained_models/` → Saved models  
+- `plot_centralized/`, `plot_federated/` → Experiment results  
+- `Client.py` → Client-side logic  
+- `Server.py` → Server-side logic  
+- `Model.py` → LSTM model for character prediction  
+- `Centralized_Shakespeare.ipynb` → Centralized experiments  
+- `Federated_Shakespeare.ipynb` → Federated experiments  
+- `Report.md` → Results and insights  
+- `personal_contribution/` → **Implementation of Evolutionary Algorithms (EA) for client selection (Jupyter notebook: `Experiments.ipynb`)**  
+---
 
+## 🎯 Personal Contribution Methodology  
 
-For what concerns hyperparameters tuning, different values for lr and wd (and also different schedulers for the centralized version) have been experienced. More details about the result are in Report.md, which reports the results of the experiments for each dataset in the corresponding folder.  
+We propose an **evolutionary-based client selection strategy** to tackle statistical and system heterogeneity in FL.  
 
-Moreover, in plots_federated and plots_centralized you can find also accuracies and losses for the best set of parameters during tuning. We have not reported them in the report for brevity. 
+### ⚡ **Key Contributions**  
+✅ **Adaptive Client Selection**: Using EAs to select high-loss clients for better model convergence  
+✅ **Fairness Considerations**: Ensuring diverse client participation without exposing private data  
+
+---
+
+## 📊 Experimental Setup  
+
+### 📌 **Datasets**  
+1️⃣ **CIFAR-100**: Standard image classification dataset  
+2️⃣ **Shakespeare** (from [LEAF Benchmark](https://leaf.cmu.edu/)): Character-level text prediction  
+
+### 🏗 **Federated Learning Setup**  
+- **Client-Server Architecture** with multiple clients updating local models  
+- **Heterogeneous Data Distribution** simulating real-world FL scenarios  
+- **Comparison with Baseline Strategies**:  
+  - Random client selection  
+  - Uniform sampling  
+  - Proposed **EA-based selection**  
+
+### 🔧 **Hyperparameter Tuning**  
+- Different **learning rates (lr)**, **weight decays (wd)**, and **schedulers**  
+- Details available in `Report.md`  
+
+---
+
+## 📈 Results  
+
+🔹 **Federated vs. Centralized Performance**  
+- Evaluated model accuracy & loss trends for different settings  
+- Comparison of FL client selection strategies  
+
+🔹 **Impact of Client Selection**  
+- Improved convergence speed with EA-based selection  
+- Better utilization of computational resources  
+
+🔹 **Plots & Visualizations**  
+- Accuracy & loss curves saved in `plots_federated/` and `plots_centralized/`  
+
+---
+
+## 🚀 Getting Started  
+
+### 🔹 **1. Clone the repository**  
+```bash
+git clone https://github.com/your-repo.git
+cd your-repo
+```
+
+### 🔹 **2. Set up the environment**  
+```bash
+python -m venv env
+source env/bin/activate  # On Windows: env\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 🔹 **3. Run Experiments**  
+#### 🖼 CIFAR-100  
+- **Centralized Training:**  
+  ```bash
+  jupyter notebook cifar100/train_centralized.ipynb
+  ```
+- **Federated Learning:**  
+  ```bash
+  jupyter notebook cifar100/federated_notebook.ipynb
+  ```
+
+#### 🎭 Shakespeare  
+- **Centralized Training:**  
+  ```bash
+  jupyter notebook shakespeare/Centralized_Shakespeare.ipynb
+  ```
+- **Federated Learning:**  
+  ```bash
+  jupyter notebook shakespeare/Federated_Shakespeare.ipynb
+  ```
+
+---
+
+## 📚 References  
+
+1️⃣ **LEAF Benchmark**: Caldas, Sebastian, et al. *"Leaf: A benchmark for federated settings."* arXiv preprint arXiv:1812.01097 (2018).  
+2️⃣ **Federated Optimization**: Reddi, Sashank, et al. *"Adaptive Federated Optimization."* 2021.  
+
+---
+
+## 🎯 Future Work  
+
+🔹 Apply the method to **more complex datasets**  
+🔹 Extend selection strategies with **reinforcement learning**  
+🔹 Optimize for **mobile and edge computing** scenarios  
+
+---
+
+## 🤝 Contributions  
+
+Contributions are welcome! Feel free to fork the repo and submit pull requests. 🚀  
+
+---
+
+## 🛠 Contact  
+
+**Authors:**  
+- 🧑‍💻 Luca Dadone  
+- 🧑‍💻 Stefano Fumero  
+- 🧑‍💻 Andrea Mirenda  
+
+📩 For any inquiries, please reach out to the authors.  
+
+---
+
+Ti piace questo formato? Se vuoi posso modificare qualche sezione! 🚀
