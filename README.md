@@ -155,6 +155,3 @@ Contributions are welcome! Feel free to fork the repo and submit pull requests. 
 
 📩 For any inquiries, please reach out to the authors.  
 
----
-
-Ti piace questo formato? Se vuoi posso modificare qualche sezione! 🚀
