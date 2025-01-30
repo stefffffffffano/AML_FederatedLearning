@@ -1,25 +1,144 @@
-# AML_FederatedLearning
-Project work for the course of advanced machine learning, year 2024/2025.   
+# Federated Learning Project: Optimizing Client Selection with Evolutionary Algorithms  
 
-Authors: 
-- Dadone Luca
-- Fumero Stefano
-- Mirenda Andrea  
+## 📖 Overview  
 
+Federated Learning (FL) is a decentralized machine learning approach where multiple devices train a shared model without exchanging local data. This project explores **client selection strategies** using **Evolutionary Algorithms (EAs)** to analyze their impact on model convergence and communication efficiency, comparing them with baseline methods.  
 
+We conduct experiments on **two datasets**:  
+- 📸 **CIFAR-100** – Image classification task  
+- 🎭 **Shakespeare** – Character-level language modeling  
 
-The focus of the project is Federated Learning with many experiments, run both on the centralized and federated setting, for the CIFAR-100 and Shakespeare datasets.  
+The experiments include **centralized** and **federated** settings to provide a comparative analysis of Federated Learning performance.  
 
+---
 
-The repo is organized in 3 main folders: data, cifar100 and shakespeare.  
-In data, you can find the data loaders for the two aforementioned datasets, while, in cifar-100 and shakespeare, there is the code related to the experiments on the two datasets.  
+## 📂 Repository Structure  
 
-In particular, all the functions used have been modularized following a similar logic for both the datasets. For the federated setting, a Client and a Server class have been created to manage client update, client selection and sharding. In the utilities, you can find other useful functions to manage checkpointing (to restart executions on Colab when stopped), for plotting results and saving data. In particular, for cifar100, for instance, in federated_utils there is a function that stores models, train and validation accuracies and train and validation losses. This allowed us not to repeat the training when further considerations were needed.  
+The repository is structured into two main dataset-specific directories:  
 
+### 🔹 `cifar100/`  
+- `data/cifar100/` → Data loading utilities  
+- `models/` → Model definitions  
+- `plots_centralized/`, `plots_federated/` → Experiment results  
+- `trained_models/` → Saved models  
+- `utils/` → Utility scripts  
+- `Client.py` → Client-side logic for FL  
+- `Server.py` → Server-side logic for FL  
+- `federated_notebook.ipynb` → Jupyter notebook for FL experiments  
+- `train_centralized.ipynb` → Jupyter notebook for centralized experiments  
+- `Report.md` → Detailed results and analysis on centralized and federated baseline configurations 
+- `personal_contribution/` → **Implementation of Evolutionary Algorithms (EA) for client selection** with experiment result (`plots_federated`) and Jupyter notebook (`Experiments.ipynb`)
 
-In each of the two folders containing the code for the two datasets you can find two jupyter notebooks with all the sequence of experiments (one for the centralized setting, the other for the federated one). They can be reproduced and make use of the functions and classes described before. As for readability, we organize them in cycles to group based on the focus of the experiment. For example, when evaluating different values of gamma for the skewed client participation, we report one single cycle for hyperparameter tuniing and training for each gamma for readability.   
+### 🔹 `shakespeare/`  
+- `LEAF_data/` → Dataset preprocessing scripts from **LEAF Benchmark**  
+- `trained_models/` → Saved models  
+- `plot_centralized/`, `plot_federated/` → Experiment results  
+- `Client.py` → Client-side logic  
+- `Server.py` → Server-side logic  
+- `Model.py` → LSTM model for character prediction  
+- `Centralized_Shakespeare.ipynb` → Centralized experiments  
+- `Federated_Shakespeare.ipynb` → Federated experiments  
+- `Report.md` → **Dataset creation information** and architecture details  
+- `personal_contribution/` → **Implementation of Evolutionary Algorithms (EA) for client selection** with experiment result (`plots_federated`) and Jupyter notebook (`Experiments.ipynb`)
+---
 
+## 🎯 Personal Contribution Methodology  
 
-For what concerns hyperparameters tuning, different values for lr and wd (and also different schedulers for the centralized version) have been experienced. More details about the result are in Report.md, which reports the results of the experiments for each dataset in the corresponding folder.  
+We propose an **evolutionary-based client selection strategy** to tackle statistical and system heterogeneity in FL.  
 
-Moreover, in plots_federated and plots_centralized you can find also accuracies and losses for the best set of parameters during tuning. We have not reported them in the report for brevity. 
+ **Key Contributions:**  
+✅ **Adaptive Client Selection**: Using EAs to select high-loss clients for better model convergence  
+✅ **Fairness Considerations**: Ensuring diverse client participation without exposing private data  
+
+---
+
+## 📊 Experimental Setup  
+
+### 🗄 **Datasets**  
+1️⃣ **CIFAR-100**: Standard image classification dataset  
+2️⃣ **Shakespeare** (from [LEAF Benchmark](https://leaf.cmu.edu/)): Character-level text prediction  
+
+### 🏗 **Federated Learning Setup**  
+- **Client-Server Architecture** with multiple clients training local models  
+- **Heterogeneous Data Distribution** to simulate real-world FL scenarios  
+- **Client Selection Strategies**:  
+  - Baseline methods (Random selection, Uniform sampling)  
+  - **Evolutionary Algorithm (EA)-based selection** for adaptive client participation  
+- **Impact of Skewed Client Participation**:  
+  - Clients selected with probabilities drawn from a **Dirichlet distribution** (γ-controlled heterogeneity)  
+  - Analysis of test accuracy degradation under different γ values  
+
+### 🔄 **Impact of Local Updates (J) and Communication Rounds**  
+- **Evaluation under different numbers of local steps (J)**  
+  - Trade-off analysis between local model drift and communication frequency  
+  - Scaling rounds to balance global updates vs. local training  
+  - Effect of J on CIFAR-100 and Shakespeare datasets  
+
+### 🔧 **Hyperparameter Tuning**  
+- **CIFAR-100**: Grid search on **learning rates, weight decays, and schedulers** (Only for Centralized version: StepLR, Cosine Annealing, Exponential LR)  
+- **Shakespeare**: Preprocessing and tuning based on **LEAF Benchmark** and literature guidelines  
+- **EA-based selection**: Hyperparameter tuning on **crossover probabilities**  
+
+---
+
+## 🚀 Getting Started  
+
+### 🔹 **1. Clone the repository**  
+```bash
+git clone https://github.com/stefffffffffano/AML_FederatedLearning.git
+cd AML_FederatedLearning
+```
+
+### 🔹 **2. Set up the environment**  
+```bash
+python -m venv env
+source env/bin/activate  # On Windows: env\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 🔹 **3. Run Experiments**  
+#### 🖼 CIFAR-100  
+- **Centralized Training:**  
+  ```bash
+  jupyter notebook cifar100/train_centralized.ipynb
+  ```
+- **Federated Learning:**  
+  ```bash
+  jupyter notebook cifar100/federated_notebook.ipynb
+  ```
+- **Personal Contribution (EA-based Client Selection) Notebook:**  
+  ```bash
+  jupyter notebook personal_contribution/Experiments.ipynb
+  ```
+
+#### 🎭 Shakespeare  
+- **Centralized Training:**  
+  ```bash
+  jupyter notebook shakespeare/Centralized_Shakespeare.ipynb
+  ```
+- **Federated Learning:**  
+  ```bash
+  jupyter notebook shakespeare/Federated_Shakespeare.ipynb
+  ```
+- **Personal Contribution (EA-based Client Selection) Notebook:**  
+  ```bash
+  jupyter notebook personal_contribution/Experiments.ipynb
+  ```
+
+---
+
+## 🤝 Contributions  
+
+Contributions are welcome! Feel free to fork the repo and submit pull requests. 🚀  
+
+---
+
+## 📬 Contact  
+
+**Authors:**  
+- 🧑‍💻 [Luca Dadone](https://github.com/dadoluca) 
+- 🧑‍💻 [Stefano Fumero ](https://github.com/stefffffffffano) 
+- 🧑‍💻 [Andrea Mirenda](https://github.com/Andrea-1704) 
+
+For any inquiries, please reach out to the authors.  
+
